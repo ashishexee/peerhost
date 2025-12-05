@@ -1,0 +1,6 @@
+/apps/gateway/node_modules
+/apps/worker/node_modules
+.env
+/packages/contracts/lib
+/packages/contracts/cache
+/packages/contracts/out

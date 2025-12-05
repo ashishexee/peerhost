@@ -1,0 +1,41 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "address", "name": "wallet", "type": "address" },
+      { "indexed": false, "internalType": "string", "name": "project", "type": "string" },
+      { "indexed": false, "internalType": "string", "name": "fn", "type": "string" },
+      { "indexed": false, "internalType": "string", "name": "cid", "type": "string" },
+      { "indexed": false, "internalType": "bytes32", "name": "requestId", "type": "bytes32" }
+    ],
+    "name": "ExecutionRequested",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "nonce",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "name": "processedRequests",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "wallet", "type": "address" },
+      { "internalType": "string", "name": "project", "type": "string" },
+      { "internalType": "string", "name": "fn", "type": "string" },
+      { "internalType": "string", "name": "cid", "type": "string" },
+      { "internalType": "bytes32", "name": "inputHash", "type": "bytes32" }
+    ],
+    "name": "triggerRequest",
+    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
