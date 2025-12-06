@@ -7,7 +7,6 @@ export async function executeFunction(code, args, envVars = {}) {
             log: (...args) => console.log("[Func Log]", ...args),
             error: (...args) => console.error("[Func Err]", ...args)
         },
-        // In a real prod env, limit these further!
         fetch: global.fetch,
         args,
         env: envVars

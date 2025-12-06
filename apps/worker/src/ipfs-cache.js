@@ -6,7 +6,7 @@ const cache = new NodeCache({ stdTTL: 3600 });
 
 // Use a public gateway or your own. 
 // Ideally configure via env, defaulting to cloudflare or ipfs.io
-const GATEWAY = process.env.IPFS_GATEWAY || "https://ipfs.io/ipfs";
+const GATEWAY = process.env.IPFS_GATEWAY || "https://gateway.pinata.cloud/ipfs";
 
 export async function fetchFunctionCode(cid) {
     if (cache.has(cid)) {
