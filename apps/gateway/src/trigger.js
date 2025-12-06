@@ -8,10 +8,20 @@ import { supabase } from "./db/supabase.js";
 const require = createRequire(import.meta.url);
 const ExecutionABI = require("./abi/ExecutionCoordinator.json");
 
-const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
-const wallet = new ethers.Wallet(process.env.GATEWAY_PRIVATE_KEY, provider);
+let contractInstance = null;
 
-const contract = new ethers.Contract(process.env.EXECUTION_CONTRACT_ADDRESS, ExecutionABI, wallet);
+function getContract() {
+    if (contractInstance) return contractInstance;
+
+    const rpcUrl = process.env.RPC_URL;
+    if (!rpcUrl) throw new Error("Missing RPC_URL env var");
+
+    const provider = new ethers.JsonRpcProvider(rpcUrl);
+    const wallet = new ethers.Wallet(process.env.GATEWAY_PRIVATE_KEY, provider);
+    contractInstance = new ethers.Contract(process.env.EXECUTION_CONTRACT_ADDRESS, ExecutionABI, wallet);
+
+    return contractInstance;
+}
 
 
 export async function triggerExecution({ request, hash }) {
@@ -28,6 +38,7 @@ export async function triggerExecution({ request, hash }) {
         throw err;
     }
 
+    const contract = getContract();
     const tx = await contract.triggerRequest(
         request.meta.wallet,
         request.meta.project,
