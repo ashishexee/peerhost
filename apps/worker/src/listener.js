@@ -30,7 +30,7 @@ export async function startListener() {
     // For this prototype, assuming simplified signature matching Gateway's emission.
 
     contract.on("ExecutionRequested", async (wallet, project, fn, cid, requestIdHex, event) => {
-        const requestId = requestIdHex; // or convert BigInt if needed
+        const requestId = BigInt(requestIdHex).toString(); // Convert Hex to Decimal String to match Gateway
         console.log(`[Event] ExecutionRequested: ${project}/${fn} (ReqID: ${requestId})`);
 
         try {
@@ -43,7 +43,7 @@ export async function startListener() {
             const result = await executeFunction(code, {});
 
             // 3. Report
-            await sendResult(requestId, result);
+            await sendResult(requestIdHex, result);
 
         } catch (err) {
             console.error(`[Worker] Job failed for ${requestId}:`, err);

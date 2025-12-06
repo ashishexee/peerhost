@@ -21,6 +21,7 @@ export async function sendResult(requestId, result) {
     let txHash = null;
 
     // 1. Submit to Blockchain (Proof of Execution)
+    // Contract expects Bytes32 (Hex)
     try {
         console.log(`[Result] Submitting proof on-chain...`);
         const provider = new ethers.JsonRpcProvider(RPC_URL);
@@ -30,6 +31,7 @@ export async function sendResult(requestId, result) {
         const resultString = typeof result === 'object' ? JSON.stringify(result) : String(result);
         const resultHash = ethers.keccak256(ethers.toUtf8Bytes(resultString));
 
+        // requestId should be Hex for the contract
         const tx = await contract.submitResult(requestId, resultHash);
         console.log(`[Result] Transaction sent: ${tx.hash}`);
 
@@ -39,28 +41,31 @@ export async function sendResult(requestId, result) {
         console.log(`[Result] Transaction confirmed for ${requestId}`);
 
     } catch (err) {
-        console.error(`[Result] Failed to submit result on-chain for ${requestId}:`, err.message);
-        // Note: We might still want to report to Gateway even if chain fails? 
-        // For strict "Proof" architecture, maybe not. But for user experience, probably yes.
-        // Let's rethrow for now to enforce strictness, or log and proceed.
-        // Rethrowing ensures we don't return unproven results if that's the goal.
-        throw err;
+        if (err.message.includes("Request already completed") || err.message.includes("already completed")) {
+            console.log(`[Result] Request ${requestId} already completed on-chain. Proceeding to Gateway report.`);
+            // We proceed even if on-chain failed (specifically because it's already done)
+        } else {
+            console.error(`[Result] Failed to submit result on-chain for ${requestId}:`, err.message);
+            // This is bad for the user (no response), but we rethrow to signal failure.
+            throw err;
+        }
     }
 
     // 2. Report to Gateway (Result Data Delivery)
+    // Gateway expects Hex String (matching DB) and Polling matches Hex
     try {
-        console.log(`[Result] Sending result data to Gateway ${GATEWAY_URL}...`);
+        console.log(`[Result] Sending result data to Gateway ${GATEWAY_URL}... (ID: ${requestId})`);
+
         await axios.post(`${GATEWAY_URL}/_internal/worker-result`, {
-            requestId,
+            requestId: requestId,
             result,
-            txHash // Sending the proof tx hash to the gateway for verification
+            txHash
         }, {
             timeout: 5000
         });
         console.log(`[Result] Successfully delivered result data for ${requestId}`);
     } catch (err) {
         console.error(`[Result] Failed to send result to Gateway for ${requestId}:`, err.message);
-        // This is bad for the user (no response), but the work is "proven" on chain.
         throw err;
     }
 }

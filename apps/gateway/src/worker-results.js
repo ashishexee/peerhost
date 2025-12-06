@@ -1,9 +1,19 @@
 import { supabase } from "./db/supabase.js";
 
 
+
 export function waitForWorkerResult(requestId, { timeoutMs = 20000 } = {}) {
     return new Promise((resolve, reject) => {
         let isSettled = false;
+        let pollInterval;
+
+        const cleanup = () => {
+            clearTimeout(timer);
+            clearInterval(pollInterval);
+            if (channel) {
+                supabase.removeChannel(channel);
+            }
+        };
 
         const timer = setTimeout(() => {
             if (isSettled) return;
@@ -15,13 +25,31 @@ export function waitForWorkerResult(requestId, { timeoutMs = 20000 } = {}) {
             reject(err);
         }, timeoutMs);
 
+        // Check Logic
+        const checkStatus = async () => {
+            if (isSettled) return;
+            const { data, error } = await supabase
+                .from('requests')
+                .select('status, result')
+                .eq('request_id', requestId)
+                .single();
 
-        const cleanup = () => {
-            clearTimeout(timer);
-            if (channel) {
-                supabase.removeChannel(channel);
+            if (data && !isSettled) {
+                if (data.status === 'COMPLETED') {
+                    isSettled = true;
+                    cleanup();
+                    resolve(data.result);
+                } else if (data.status === 'FAILED') {
+                    isSettled = true;
+                    cleanup();
+                    const err = new Error("Worker reported failure");
+                    err.code = "WORKER_FAILED";
+                    reject(err);
+                }
             }
         };
+
+        // 1. Realtime Subscription
         const channel = supabase
             .channel(`request-${requestId}`)
             .on(
@@ -34,22 +62,22 @@ export function waitForWorkerResult(requestId, { timeoutMs = 20000 } = {}) {
                 },
                 (payload) => {
                     if (isSettled) return;
-                    const newRow = payload.new;
-
-                    if (newRow.status === 'COMPLETED') {
-                        isSettled = true;
-                        cleanup();
-                        resolve(newRow.result);
-                    } else if (newRow.status === 'FAILED') {
-                        isSettled = true;
-                        cleanup();
-                        const err = new Error("Worker reported failure");
-                        err.code = "WORKER_FAILED";
-                        reject(err);
-                    }
+                    console.log(`[Gateway] Realtime update received for ${requestId}`);
+                    // Re-check full status to be safe
+                    checkStatus();
                 }
             )
-            .subscribe();
+            .subscribe((status) => {
+                console.log(`[Gateway] Subscription status for ${requestId}:`, status);
+                // Initial check once subscribed
+                checkStatus();
+            });
+
+        // 2. Polling Fallback (every 2s)
+        pollInterval = setInterval(() => {
+            console.log(`[Gateway] Polling status for ${requestId}...`);
+            checkStatus();
+        }, 2000);
     });
 }
 
