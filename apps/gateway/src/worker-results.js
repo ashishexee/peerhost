@@ -15,7 +15,7 @@ export function waitForWorkerResult(requestId, { timeoutMs = 20000 } = {}) {
             reject(err);
         }, timeoutMs);
 
-        // 2. Setup Cleanup
+
         const cleanup = () => {
             clearTimeout(timer);
             if (channel) {
