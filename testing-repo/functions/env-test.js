@@ -1,6 +1,6 @@
 (async () => {
-    const a = env.A;
-    const b = env.B;
+    const a = process.env.A;
+    const b = process.env.B;
 
     return {
         status: 200,
