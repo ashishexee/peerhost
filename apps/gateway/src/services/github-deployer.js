@@ -21,7 +21,7 @@ if (!SUPABASE_URL || !SUPABASE_KEY || !PINATA_JWT) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-export async function deployRepo(wallet, repoUrl, functionNames, baseDir = "functions", envVars = {}, gitToken = null, projectNameOverride = null) {
+export async function deployRepo(wallet, repoUrl, functionNames, baseDir = "functions", envVars = {}, gitToken = null, projectNameOverride = null, monetization = null) {
     const deployId = uuidv4();
     const workDir = path.resolve(process.cwd(), "tmp", deployId);
 
@@ -111,12 +111,21 @@ export async function deployRepo(wallet, repoUrl, functionNames, baseDir = "func
                 console.log(`[Deploy ${deployId}] ${fnFile} CID: ${cid}`);
 
                 // 6. Register
-                const { error } = await supabase.from('functions').upsert({
+                // 6. Register
+                const registerPayload = {
                     wallet: wallet.toLowerCase(),
                     project: repoName,
                     function_name: cleanFnName,
                     cid: cid
-                }, { onConflict: 'wallet,project,function_name' });
+                };
+
+                if (monetization) {
+                    registerPayload.price = monetization.price || 0;
+                    registerPayload.beneficiary = monetization.beneficiary || wallet;
+                    console.log(`[Deploy ${deployId}] Function is monetized: ${registerPayload.price} USDC`);
+                }
+
+                const { error } = await supabase.from('functions').upsert(registerPayload, { onConflict: 'wallet,project,function_name' });
 
                 if (error) throw error;
 

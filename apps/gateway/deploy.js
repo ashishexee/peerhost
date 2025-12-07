@@ -13,6 +13,8 @@ const PINATA_JWT = process.env.PINATA_JWT;
 const WALLET_ADDRESS = "0xda684a91a506f3e303834c97784dee2b31bbc6bc";
 const PROJECT_NAME = "real-project";
 const FUNCTION_NAME = "complex";
+const PRICE = process.env.PRICE;
+const BENEFICIARY = process.env.BENEFICIARY;
 
 // Source file (Complex Project Entry)
 const ENTRY_FILE = path.resolve(process.cwd(), "../../testing-repo/complex/index.js");
@@ -78,7 +80,9 @@ async function deploy() {
             wallet: WALLET_ADDRESS,
             project: PROJECT_NAME,
             function_name: FUNCTION_NAME,
-            cid: cid
+            cid: cid,
+            price: process.env.PRICE || 0,
+            beneficiary: process.env.BENEFICIARY || WALLET_ADDRESS
         }, { onConflict: 'wallet,project,function_name' });
 
         if (error) throw error;

@@ -97,7 +97,7 @@ app.get('/auth/github/callback', async (req, reply) => {
 
 app.all("/:project/:fn", async (req, reply) => {
   try {
-    const host = req.headers.host;
+    const host = req.headers['x-forwarded-host'] || req.headers.host;
     const wallet = parseWalletFromHost(host);
 
     if (!wallet) {
@@ -125,14 +125,14 @@ app.all("/:project/:fn", async (req, reply) => {
 
 // Deployment Endpoint
 app.post('/deploy', async (request, reply) => {
-  const { wallet, repoUrl, projectName, functionName, baseDir, envVars, gitToken } = request.body || {};
+  const { wallet, repoUrl, projectName, functionName, baseDir, envVars, gitToken, monetization } = request.body || {};
 
   if (!wallet || !repoUrl || (!functionName && !Array.isArray(functionName))) {
     return reply.status(400).send({ error: "Missing required fields: wallet, repoUrl, functionName(s)" });
   }
 
   try {
-    const result = await deployRepo(wallet, repoUrl, functionName, baseDir, envVars, gitToken, projectName);
+    const result = await deployRepo(wallet, repoUrl, functionName, baseDir, envVars, gitToken, projectName, monetization);
     return reply.send(result);
   } catch (err) {
     request.log.error(err);
