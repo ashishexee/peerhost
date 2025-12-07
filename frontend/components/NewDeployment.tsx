@@ -83,32 +83,84 @@ export default function NewDeployment() {
   const handleConnectGitHub = () => {
       window.location.href = 'http://localhost:3001/auth/github/login';
   };
+
+  const handlePublicRepo = async () => {
+      const urlInput = (document.getElementById('public-repo-url') as HTMLInputElement).value;
+      if (!urlInput) return toast.error("Please enter a URL");
+      
+      const toastId = toast.loading("Validating repository...");
+      try {
+          const url = new URL(urlInput);
+          const pathParts = url.pathname.split('/').filter(Boolean);
+          if (pathParts.length < 2) throw new Error("Invalid GitHub URL");
+          
+          const owner = pathParts[0];
+          const name = pathParts[1];
+          const apiUrl = `https://api.github.com/repos/${owner}/${name}`;
+          
+          const headers: Record<string, string> = {};
+          const token = gitToken || localStorage.getItem('git_token');
+          if(token) headers['Authorization'] = `token ${token}`;
+
+          const res = await fetch(apiUrl, { headers });
+          if(!res.ok) throw new Error("Repository not found or private");
+          
+          const repoData = await res.json();
+          setSelectedRepo(repoData);
+          toast.success("Repository connected!", { id: toastId });
+          
+          // Clear input
+          (document.getElementById('public-repo-url') as HTMLInputElement).value = '';
+
+      } catch (e: any) {
+          toast.error(e.message || "Invalid GitHub URL", { id: toastId });
+      }
+  };
   
   const handleScanEndpoints = async () => {
-        const baseDirInput = (document.getElementById('base-dir') as HTMLInputElement).value;
+        const baseDirInput = (document.getElementById('base-dir') as HTMLInputElement).value.replace(/^\/|\/$/g, '');
         if(!selectedRepo) return;
         
-        const toastId = toast.loading("Scanning repository...");
+        const toastId = toast.loading("Scanning repository recursively...");
         try {
-            // Construct API URL: https://api.github.com/repos/OWNER/REPO/contents/PATH
-            const contentsUrl = `${selectedRepo.url}/contents/${baseDirInput}`;
+            // Use Git Tree API for recursive scan
+            const branch = selectedRepo.default_branch || 'main';
+            const treeUrl = `${selectedRepo.url}/git/trees/${branch}?recursive=1`;
             
             const headers: Record<string, string> = {};
             const token = gitToken || localStorage.getItem('git_token');
             if(token) headers['Authorization'] = `token ${token}`;
 
-            const res = await fetch(contentsUrl, { headers });
+            const res = await fetch(treeUrl, { headers });
             
             if(!res.ok) {
-                 if(res.status === 404) throw new Error(`Directory '${baseDirInput}' not found`);
+                 if(res.status === 404) throw new Error(`Branch '${branch}' not found`);
                  if(res.status === 403) throw new Error("Access denied (Check GitHub connection)");
-                 throw new Error("Failed to scan directory");
+                 throw new Error("Failed to scan repository");
             }
             
-            const files = await res.json();
-            if(Array.isArray(files)) {
-                // Filter for .js files
-                const jsFiles = files.filter((f: any) => f.name.endsWith('.js')).map((f: any) => f.name);
+            const data = await res.json();
+            
+            if(data.tree && Array.isArray(data.tree)) {
+                const jsFiles = data.tree
+                    .filter((f: any) => {
+                        // Must be a blob (file) and end with .js
+                        if(f.type !== 'blob' || !f.path.endsWith('.js')) return false;
+                        
+                        // If baseDir is specified (and not dot), file must start with it
+                        if(baseDirInput && baseDirInput !== '.') {
+                            return f.path.startsWith(baseDirInput + '/');
+                        }
+                        return true;
+                    })
+                    .map((f: any) => {
+                        // Strip baseDir from path for the input field
+                        if(baseDirInput && baseDirInput !== '.') {
+                            return f.path.substring(baseDirInput.length + 1);
+                        }
+                        return f.path;
+                    });
+
                 if(jsFiles.length > 0) {
                     (document.getElementById('fn-entry') as HTMLInputElement).value = jsFiles.join(', ');
                     toast.success(`Found ${jsFiles.length} functions!`, { id: toastId });
@@ -155,7 +207,7 @@ export default function NewDeployment() {
             body: JSON.stringify({
                 wallet: address,
                 repoUrl: selectedRepo.clone_url,
-                projectName: projectName, // Custom Project Name
+                projectName: projectName, 
                 functionName: functionNames,
                 baseDir: baseDir,
                 envVars: cleanEnvVars,
@@ -208,7 +260,6 @@ export default function NewDeployment() {
   return (
     <div className="max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold text-white mb-8">Deploy New Service</h1>
-      
       {!selectedRepo ? (
           <div className="bg-white/5 border border-white/10 rounded-xl p-8">
             <h2 className="text-xl font-semibold text-white mb-4">1. Connect Code Repository</h2>
@@ -248,6 +299,24 @@ export default function NewDeployment() {
                 )}
             </div>
 
+            <div className="border-b border-white/5 pb-6 mb-6">
+                <p className="text-gray-400 text-sm mb-3">Or paste a public repository URL:</p>
+                <div className="flex gap-2">
+                    <input 
+                        type="text" 
+                        id="public-repo-url"
+                        placeholder="https://github.com/username/repo" 
+                        className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2 text-white outline-none focus:border-white/30"
+                    />
+                    <button 
+                        onClick={handlePublicRepo}
+                        className="bg-white/10 text-white px-4 py-2 rounded-lg font-bold hover:bg-white/20 transition-colors"
+                    >
+                        Use Public Repo
+                    </button>
+                </div>
+            </div>
+
             {repos.length > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {repos.map(repo => (
@@ -266,6 +335,8 @@ export default function NewDeployment() {
                     ))}
                 </div>
             )}
+            
+
           </div>
       ) : (
           <div className="bg-white/5 border border-white/10 rounded-xl p-8 animate-in fade-in slide-in-from-bottom-4">

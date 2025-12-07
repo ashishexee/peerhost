@@ -25,7 +25,6 @@ function App() {
     <Router>
         <Toaster position="top-center" theme="dark" />
         <Routes>
-            {/* Landing Page Route */}
             <Route path="/" element={
                  <div className="min-h-screen bg-black text-white selection:bg-[#0070f3] selection:text-white pb-20">
                      <Navbar />
@@ -33,22 +32,17 @@ function App() {
                         <Hero />
                         <Architecture />
                         <Features />
-                        <PreFooter />
                      </main>
-                     <Footer />
                  </div>
             } />
 
-            {/* Worker Node Registration */}
             <Route path="/workers" element={
                  <div className="min-h-screen bg-black text-white selection:bg-[#0070f3] selection:text-white pb-20">
                      <Navbar />
                      <WorkerRegistration />
-                     <Footer />
                  </div>
             } />
 
-            {/* Educational Route */}
             <Route path="/learn-more" element={<LearnMore />} />
 
             {/* Auth Callback - Unprotected */}

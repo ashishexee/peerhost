@@ -1,3 +1,5 @@
+![PeerHost Banner](assets/banner/peerhost-banner-original.png)
+
 # PeerHost — The Decentralized Serverless Execution Network
 
 **PeerHost** is a decentralized, trust-minimized, serverless backend execution network that allows developers to deploy **functions instead of servers**. Execution is coordinated on-chain and distributed across a global network of sandboxed worker nodes, delivering infrastructure that is **resilient, censorship-resistant, and horizontally scalable by design**.

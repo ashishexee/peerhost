@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ChevronDown, Wallet as WalletIcon, LogOut } from 'lucide-react';
+import { ChevronDown, Wallet as WalletIcon, LogOut, Github } from 'lucide-react';
 import { useWallet } from '../context/WalletContext';
 
 const NavItem = ({ label }: { label: string }) => (
@@ -37,7 +37,7 @@ const Navbar = () => {
     <nav className="fixed top-0 w-full z-50 bg-black/50 backdrop-blur-md border-b border-white/10">
       <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); }} className="text-white font-lustra font-bold text-xl tracking-tighter flex items-center gap-2 cursor-pointer">
+          <a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); }} className="font-lustra font-bold text-xl tracking-tighter flex items-center gap-2 cursor-pointer bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500">
              PeerHost
           </a>
           <div className="hidden lg:flex items-center gap-1">
@@ -53,6 +53,14 @@ const Navbar = () => {
         </div>
         
         <div className="flex items-center gap-3">
+          <a 
+            href="https://github.com/ashishexee/peerhost" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-gray-400 hover:text-white transition-colors p-2"
+          >
+            <Github className="w-5 h-5" />
+          </a>
           {isConnected && location.pathname !== '/deploy' && (
               <button 
                 onClick={() => navigate('/deploy')}

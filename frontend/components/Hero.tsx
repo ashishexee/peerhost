@@ -1,5 +1,5 @@
 import React from 'react';
-import { Triangle } from 'lucide-react';
+import { Triangle, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
@@ -27,14 +27,19 @@ const Hero = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex justify-center mb-8"
+          className="flex justify-center mb-8 fill-[#8247E5]"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/5 hover:border-[#8247E5]/50 hover:bg-[#8247E5]/10 transition-all cursor-default backdrop-blur-sm group">
-            <PolygonLogo />
+          <a 
+            href="https://amoy.polygonscan.com/address/0x087a2d886fc8eadf5d03f6ea5acd0b1430c13fb8"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/5 hover:border-[#8247E5]/50 hover:bg-[#8247E5]/10 transition-all cursor-pointer backdrop-blur-sm group"
+          >
             <span className="text-xs font-medium text-accents-5 group-hover:text-white transition-colors">
               Execution Network on <span className="text-white">Polygon</span>
             </span>
-          </div>
+            <ExternalLink className="w-3 h-3 text-gray-600 group-hover:text-[#8247E5] ml-1" />
+          </a>
         </motion.div>
 
         {/* Main Heading */}
