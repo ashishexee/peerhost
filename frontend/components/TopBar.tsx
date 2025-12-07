@@ -47,14 +47,7 @@ export default function TopBar() {
         {/* Right: Actions */}
         <div className="flex items-center gap-4">
             <div className="relative hidden md:block">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-                <input 
-                    type="text" 
-                    placeholder="Search..." 
-                    className="bg-white/5 border border-white/10 rounded-full pl-9 pr-4 py-1.5 text-sm text-white focus:outline-none focus:border-white/20 w-64"
-                />
             </div>
-
             <button 
                 onClick={() => navigate('/deploy/new')}
                 className="bg-white text-black px-4 py-1.5 rounded-full text-sm font-bold hover:bg-gray-200 transition-colors flex items-center gap-2"
@@ -66,7 +59,7 @@ export default function TopBar() {
             <div className="h-6 w-px bg-white/10 mx-2"></div>
 
             <div className="flex items-center gap-3">
-                <button className="text-gray-400 hover:text-white"><HelpCircle className="w-5 h-5" /></button>
+                <button onClick={() => navigate('/learn-more')} className="text-gray-400 hover:text-white"><HelpCircle className="w-5 h-5" /></button>
                 <button className="text-gray-400 hover:text-white"><Bell className="w-5 h-5" /></button>
                 
                 {/* Wallet Dropdown */}

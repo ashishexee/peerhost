@@ -17,8 +17,7 @@ export default function Sidebar() {
     <div className="w-64 border-r border-white/10 h-screen fixed left-0 top-0 bg-black flex flex-col">
       {/* Brand */}
       <div className="h-16 flex items-center px-6 border-b border-white/10">
-        <div className="w-6 h-6 bg-white rounded-full mr-3"></div>
-        <span className="font-bold text-lg tracking-tight">PeerHost</span>
+        <span className="font-lustra font-bold text-lg tracking-tight">PeerHost</span>
       </div>
 
       {/* Navigation */}

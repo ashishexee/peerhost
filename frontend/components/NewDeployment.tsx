@@ -71,6 +71,15 @@ export default function NewDeployment() {
       if(gitToken) fetchRepos();
   }, [gitToken]);
 
+  const handleDisconnectGitHub = () => {
+      localStorage.removeItem('git_token');
+      setGitToken(null);
+      setGithubUser('');
+      setRepos([]);
+      setSelectedRepo(null);
+      toast.success("Disconnected from GitHub");
+  };
+
   const handleConnectGitHub = () => {
       window.location.href = 'http://localhost:3001/auth/github/login';
   };
@@ -228,6 +237,13 @@ export default function NewDeployment() {
                             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
                             Fetch Repos
                         </button>
+                        <button 
+                            onClick={handleDisconnectGitHub}
+                            className="bg-red-500/10 text-red-400 px-4 py-3 rounded-lg font-bold hover:bg-red-500/20 border border-red-500/20 flex items-center gap-2"
+                            title="Disconnect GitHub"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
                     </div>
                 )}
             </div>
@@ -309,8 +325,6 @@ export default function NewDeployment() {
                     />
                      <p className="text-xs text-gray-500 mt-2">Comma separated (e.g. <code>hello.js, index.js</code>)</p>
               </div>
-
-               {/* Env Vars Section */}
 
                {/* Env Vars Section */}
               <div className="mb-8 p-6 bg-black/20 rounded-xl border border-white/5">

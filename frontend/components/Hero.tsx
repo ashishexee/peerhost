@@ -1,6 +1,7 @@
 import React from 'react';
 import { Triangle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const PolygonLogo = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -12,6 +13,8 @@ const PolygonLogo = () => (
 );
 
 const Hero = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="relative pt-32 pb-20 overflow-hidden min-h-[90vh] flex flex-col items-center justify-center border-b border-white/10">
       {/* Background Grids */}
@@ -61,7 +64,10 @@ const Hero = () => {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <button className="h-12 px-8 rounded-full bg-white text-black font-medium text-base hover:bg-gray-200 transition-all flex items-center gap-2">
+          <button 
+             onClick={() => navigate('/deploy')}
+             className="h-12 px-8 rounded-full bg-white text-black font-medium text-base hover:bg-gray-200 transition-all flex items-center gap-2"
+          >
              <svg
                 width="16"
                 height="16"
@@ -73,8 +79,11 @@ const Hero = () => {
               </svg>
             Start Building
           </button>
-          <button className="h-12 px-8 rounded-full bg-accents-1 border border-accents-2 text-white font-medium text-base hover:bg-accents-2 transition-all">
-            Talk to Team
+          <button 
+            onClick={() => navigate('/workers')}
+            className="h-12 px-8 rounded-full bg-accents-1 border border-accents-2 text-white font-medium text-base hover:bg-accents-2 transition-all"
+          >
+            Register as Worker
           </button>
         </motion.div>
       </div>

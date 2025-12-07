@@ -37,13 +37,18 @@ const Navbar = () => {
     <nav className="fixed top-0 w-full z-50 bg-black/50 backdrop-blur-md border-b border-white/10">
       <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); }} className="text-white font-bold text-xl tracking-tighter flex items-center gap-2 cursor-pointer">
-             <div className="w-6 h-6 bg-white rounded-full"></div>
+          <a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); }} className="text-white font-lustra font-bold text-xl tracking-tighter flex items-center gap-2 cursor-pointer">
              PeerHost
           </a>
           <div className="hidden lg:flex items-center gap-1">
             <NavItem label="Protocol" />
             <NavItem label="Docs" />
+            <button 
+                onClick={() => navigate('/workers')}
+                className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1 px-2 py-1 whitespace-nowrap"
+            >
+                Run Node
+            </button>
           </div>
         </div>
         
