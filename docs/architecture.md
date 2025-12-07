@@ -8,18 +8,15 @@ This document describes the **complete architecture**: from how users interact w
 
 ## 1. High-Level System Overview
 
-PeerHost is composed of four core layers:
+PeerHost is composed of five core layers, visualized in the platform architecture diagram:
 
-1. **User Layer** — Developers and API consumers.
-2. **Gateway Layer** — Central HTTP entrypoint that parses requests and triggers blockchain coordination.
-3. **Blockchain Coordination Layer** — Smart contract that emits execution jobs.
-4. **Worker Execution Layer** — Distributed sandboxed nodes that execute user code and return results.
+1.  **Layer 1: Applications (User Layer)** — Clients, dApps, and dashboards that consume the APIs.
+2.  **Layer 2: Gateway & Control** — Central Auth, Rate Limits, and Routing.
+3.  **Layer 3: ExecutionCoordinator.sol (Blockchain)** — Trustless Job Dispatcher ensuring verification.
+4.  **Layer 4: Global Worker Grid** — Execution environments (Sandboxes, microVMs, Bare Metal).
+5.  **Layer 5: IPFS & Storage** — Immutable code storage and data persistence.
 
-The system replaces traditional server hosting with:
-- Event-driven execution
-- Decentralized compute
-- Sandbox isolation
-- On-chain coordination
+The system replaces traditional server hosting with a decentralized from request to reponse.
 
 ---
 
@@ -36,7 +33,7 @@ A developer interacts with PeerHost like a serverless platform:
 4. Sets environment variables (`.env`) via the dashboard UI.
 5. The platform:
    - Bundles the code.
-   - Uploads it to IPFS.
+   - Uploads it to IPFS (Layer 5).
    - Stores the CID in an internal registry.
 6. The developer receives live API endpoints in the form:
 
@@ -57,7 +54,7 @@ Example:
 
 ### 2.2 API Consumer Usage
 
-A normal user or frontend application simply sends HTTP requests to the PeerHost URL:
+A normal user or frontend application (Layer 1) simply sends HTTP requests to the PeerHost URL:
 
 ```
 
@@ -75,91 +72,37 @@ To them, it behaves like a normal always-on backend.
 
 ---
 
-## 3. Core Components
+## 3. Core Architecture Layers
 
-### 3.1 Gateway (Central HTTP Orchestrator)
+### Layer 1: Applications (User Interfaces)
+The top layer consists of the client-side applications. These are the consumers of the PeerHost APIs, including web dashboards, mobile apps, and other dApps. They interact with the system via standard HTTP/REST calls.
 
-The Gateway is the **only public HTTP server** in the system.
+### Layer 2: Gateway & Control (API Gateway)
+The Gateway is the entry point for all incoming requests.
+**Responsibilities:**
+- **Auth & Rate Limits:** Protects the network from spam and unauthorized access.
+- **Routing:** Directs requests to the appropriate function handlers.
+- **Orchestration:** Triggers the blockchain layer to dispatch jobs.
 
-Its responsibilities:
+### Layer 3: ExecutionCoordinator.sol (Smart Contracts)
+The Blockchain layer acts as the **Trustless Job Dispatcher**.
+**Responsibilities:**
+- **Job Dispatching:** Emits events when execution is requested.
+- **Verification:** Verifies compute proofs and manages payouts.
+- **Coordination:** Ensures workers are in sync and results are recorded on-chain.
 
-- Parse incoming requests
-- Validate URL & headers
-- Load function metadata from the registry
-- Canonicalize the request
-- Trigger the Execution Contract
-- Collect results from workers
-- Respond to the HTTP client
+### Layer 4: Global Worker Grid (Sandboxed Execution)
+The execution layer consists of decentralized nodes running secured environments.
+**Responsibilities:**
+- **Execution:** Runs user code in isolated sandboxes (Docker, microVMs).
+- **Security:** Ensures no leakage of secrets or host compromise.
+- **Scaling:** Provides global compute capacity.
 
-The Gateway **never executes user code directly**.
-
-It only:
-- Coordinates execution
-- Handles client communication
-- Maintains temporary request state
-
----
-
-### 3.2 Execution Contract (Blockchain Coordination Layer)
-
-The Execution Coordinator smart contract is deployed on a low-cost blockchain (e.g., Polygon Amoy).
-
-Its responsibilities:
-
-- Accept execution triggers from the Gateway
-- Store request metadata (lightweight)
-- Emit `ExecutionRequested` events
-- Receive result submissions from workers (future phase)
-- Act as the source of truth for job coordination
-
-The contract **does not execute any code**.  
-It exists only to:
-- Coordinate
-- Order
-- Broadcast
-- Verify
-
----
-
-### 3.3 Worker Network (Decentralized Execution Layer)
-
-Workers are independent machines run by:
-
-- The platform owner
-- Community contributors
-- Future incentivized node operators
-
-Their responsibilities:
-
-- Listen to blockchain execution events
-- Fetch function code from IPFS
-- Run the function inside a Docker sandbox
-- Capture the output
-- Send the result back to the Gateway
-- (Later phases) Submit proofs on-chain
-
-Workers are:
-- Stateless
-- Isolated
-- Permissionless (in future)
-- Replaceable
-
----
-
-### 3.4 IPFS Layer (Code Storage)
-
-All user function bundles are stored on IPFS.
-
-IPFS provides:
-
-- Content-addressed storage
-- Immutable builds
-- Distributed availability
-- Worker-verifiable source code
-
-Workers fetch code **by CID**, not from the Gateway.
-
----
+### Layer 5: IPFS & Storage (Decentralized Storage)
+The foundation layer for data and code.
+**Responsibilities:**
+- **Immutable Code Storage:** Stores function bundles deterministically.
+- **Data Persistence:** Ensures code is always available to workers.
 
 ## 4. Full Request Lifecycle (End-to-End Flow)
 
