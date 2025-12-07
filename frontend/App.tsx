@@ -1,12 +1,9 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Features from './components/Features';
 import Architecture from './components/Architecture';
-import PreFooter from './components/PreFooter';
-import Footer from './components/Footer';
 import { useWallet } from './context/WalletContext';
 
 import DashboardLayout from './components/DashboardLayout';
@@ -16,6 +13,7 @@ import Projects from './components/Projects';
 import AuthCallback from './components/AuthCallback';
 import WorkerRegistration from './components/WorkerRegistration';
 import LearnMore from './components/LearnMore';
+import Docs from './components/Docs';
 import { Toaster } from 'sonner';
 
 function App() {
@@ -44,6 +42,8 @@ function App() {
             } />
 
             <Route path="/learn-more" element={<LearnMore />} />
+            
+            <Route path="/docs" element={<Docs />} />
 
             {/* Auth Callback - Unprotected */}
             <Route path="/auth/callback" element={<AuthCallback />} />

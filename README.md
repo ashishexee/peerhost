@@ -6,6 +6,8 @@
 
 PeerHost removes the dependency on centralized cloud providers while preserving the simplicity of modern serverless developer experience.
 
+**The best part of PeerHost is that users do not need to know anything about Web3, decentralization, or blockchain.** They can simply get their backend URL just like in any other serverless deployment service, while the decentralized execution happens transparently in the background.
+
 ---
 
 ## Why PeerHost Exists

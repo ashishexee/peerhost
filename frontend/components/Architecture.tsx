@@ -87,55 +87,55 @@ const Architecture = () => {
                 transform: 'rotateX(55deg) rotateZ(-45deg) translateY(-50px)',
             }}
          >
-            {/* Layer 5: IPFS (Bottom) */}
+            {/* Layer 5: Worker (Bottom) */}
             <LayerPlate 
                 z={0} 
-                color="indigo" 
-                title="IPFS & Storage" 
-                subLabel="Immutable Code Storage"
-                delay={0.1}
-                icons={<><Database size={24} /><HardDrive size={24} /><Network size={24} /></>} 
-            />
-
-            {/* Layer 4: Worker Network */}
-            <LayerPlate 
-                z={80} 
                 color="pink" 
                 title="Global Worker Grid" 
                 subLabel="Sandbox • microVMs • Bare Metal"
                 details="Node operators running secured execution environments"
-                delay={0.2}
+                delay={0.5}
                 icons={<><Server size={24} /><Box size={24} /><Cpu size={24} /></>} 
             />
 
-            {/* Layer 3: Blockchain */}
+            {/* Layer 4: Blockchain */}
             <LayerPlate 
-                z={160} 
+                z={100} 
                 color="purple" 
                 title="ExecutionCoordinator.sol" 
                 subLabel="Trustless Job Dispatcher"
                 details="Verifies compute proofs & manages payouts on-chain"
-                delay={0.3}
+                delay={0.4}
                 icons={<><FileCode size={24} /><LinkIcon size={24} /><Layers size={24} /></>} 
             />
 
-            {/* Layer 2: Gateway */}
+            {/* Layer 3: Gateway */}
             <LayerPlate 
-                z={240} 
+                z={200} 
                 color="cyan" 
                 title="Gateway & Control" 
                 subLabel="Auth • Rate Limits • Routing"
-                delay={0.4}
+                delay={0.3}
                 icons={<><Shield size={24} /><Router size={24} /></>} 
+            />
+
+            {/* Layer 2: IPFS */}
+            <LayerPlate 
+                z={300} 
+                color="indigo" 
+                title="IPFS & Storage" 
+                subLabel="Immutable Code Storage"
+                delay={0.2}
+                icons={<><Database size={24} /><HardDrive size={24} /><Network size={24} /></>} 
             />
 
             {/* Layer 1: User (Top) */}
             <LayerPlate 
-                z={320} 
+                z={400} 
                 color="blue" 
                 title="Applications" 
                 subLabel="Clients • dApps • Dashboards"
-                delay={0.5}
+                delay={0.1}
                 icons={<><Smartphone size={24} /><Monitor size={24} /><Globe size={24} /></>} 
             />
 
@@ -144,7 +144,7 @@ const Architecture = () => {
                initial={{ scaleY: 0 }}
                whileInView={{ scaleY: 1 }}
                transition={{ duration: 1, delay: 0.8 }}
-               className="absolute w-[2px] bg-gradient-to-t from-indigo-500 via-purple-500 to-blue-500 opacity-50 shadow-[0_0_10px_white]"
+               className="absolute w-[2px] bg-gradient-to-t from-pink-500 via-purple-500 to-blue-500 opacity-50 shadow-[0_0_10px_white]"
                style={{ 
                    top: '50%', 
                    left: '50%', 
@@ -158,9 +158,10 @@ const Architecture = () => {
          {/* Floating Labels (Outside the 3D transform for readability) */}
          <div className="absolute inset-0 max-w-5xl mx-auto pointer-events-none">
              <Label text="User Interfaces" top="20%" side="left" delay={0.6} />
-             <Label text="API Gateway" top="35%" side="right" delay={0.7} />
-             <Label text="Smart Contracts" top="50%" side="left" delay={0.8} />
-             <Label text="Sandboxed Execution(Worker)" top="65%" side="right" delay={0.9} />
+             <Label text="IPFS Decentralized Storage" top="35%" side="right" delay={0.7} />
+             <Label text="API Gateway" top="50%" side="left" delay={0.8} />
+             <Label text="Smart Contracts" top="65%" side="right" delay={0.9} />
+             <Label text="Sandboxed Execution(Worker)" top="60%" side="left" delay={1.0} />
          </div>
 
       </div>

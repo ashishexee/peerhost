@@ -3,6 +3,9 @@ import { Triangle, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
+import { useWallet } from '../context/WalletContext';
+import { toast } from 'sonner';
+
 const PolygonLogo = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M16.524 21.642L12 24L7.476 21.642V16.926L12 14.568L16.524 16.926V21.642Z" fill="#8247E5" fillOpacity="0.8"/>
@@ -14,6 +17,17 @@ const PolygonLogo = () => (
 
 const Hero = () => {
   const navigate = useNavigate();
+  const { isConnected } = useWallet();
+
+  const handleStartBuilding = () => {
+      if (!isConnected) {
+          toast.error("Please connect your wallet first", {
+              description: "You need a wallet to deploy on the network."
+          });
+          return;
+      }
+      navigate('/deploy');
+  };
 
   return (
     <section className="relative pt-32 pb-20 overflow-hidden min-h-[90vh] flex flex-col items-center justify-center border-b border-white/10">
@@ -70,7 +84,7 @@ const Hero = () => {
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <button 
-             onClick={() => navigate('/deploy')}
+             onClick={handleStartBuilding}
              className="h-12 px-8 rounded-full bg-white text-black font-medium text-base hover:bg-gray-200 transition-all flex items-center gap-2"
           >
              <svg

@@ -225,8 +225,18 @@ export default function NewDeployment() {
             <div className="bg-[#111] border border-white/10 p-4 rounded-lg shadow-xl text-white min-w-[300px]">
                 <h3 className="font-bold text-green-400 mb-1">Deployment Complete!</h3>
                 <p className="text-xs text-gray-400 mb-3">Your service is live at:</p>
-                <div className="bg-black/50 p-2 rounded text-xs font-mono text-blue-300 break-all mb-3 border border-white/5">
-                    {baseUrl}
+                <div className="bg-black/50 p-2 rounded text-xs font-mono text-blue-300 break-all mb-3 border border-white/5 flex items-center justify-between gap-2">
+                    <span>{baseUrl}</span>
+                    <button 
+                        onClick={() => {
+                            navigator.clipboard.writeText(baseUrl);
+                            toast.success("Copied!");
+                        }}
+                        className="text-gray-400 hover:text-white p-1"
+                        title="Copy URL"
+                    >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    </button>
                 </div>
 
                 <div className="text-sm space-y-1 text-gray-400 max-h-40 overflow-y-auto">
@@ -244,7 +254,7 @@ export default function NewDeployment() {
                         ))}
                 </div>
             </div>
-            ), { duration: 10000 }); // Longer duration for review
+            ), { duration: 6000 }); // Auto-dismiss after 6 seconds
                  
             navigate('/deploy');
         } else {

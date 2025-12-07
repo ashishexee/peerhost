@@ -60,7 +60,7 @@ export default function Projects() {
     };
 
     const copyProjectUrl = (subdomain: string, project: string) => {
-        const url = `https://${subdomain}.peerhost.net/${project}`;
+        const url = `http://${subdomain}.localhost:3001/${project}`;
         navigator.clipboard.writeText(url);
         toast.success('Project URL copied to clipboard');
     };

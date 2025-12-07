@@ -41,7 +41,6 @@ const Navbar = () => {
              PeerHost
           </a>
           <div className="hidden lg:flex items-center gap-1">
-            <NavItem label="Protocol" />
             <NavItem label="Docs" />
             <button 
                 onClick={() => navigate('/workers')}

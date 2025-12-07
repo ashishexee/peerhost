@@ -3,7 +3,6 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Code, Server, Zap, Rocket } from 'lucide-react';
 import Navbar from './Navbar';
-import Footer from './Footer';
 
 const LearnMore = () => {
   const navigate = useNavigate();
@@ -150,8 +149,6 @@ return {
         </div>
 
       </div>
-
-      <Footer />
     </div>
   );
 };
