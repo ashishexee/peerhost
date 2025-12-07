@@ -37,13 +37,37 @@ export async function startListener() {
             // 1. Fetch Code
             const code = await fetchFunctionCode(cid);
 
-            // 2. Execute
-            // Inputs: In a real system, inputs would be decoded from the event or a separate data availability layer.
-            // For now, passing empty args.
-            const result = await executeFunction(code, {});
+            // 2. Fetch Inputs (from Gateway)
+            const GATEWAY_URL = process.env.GATEWAY_URL || "http://localhost:3001";
+            let inputs = {};
+
+            // Retry loop for inputs (handling race condition where Gateway persists after event)
+            for (let attempt = 1; attempt <= 5; attempt++) {
+                try {
+                    console.log(`[Worker] Fetching inputs for ${requestId} (Attempt ${attempt}/5)...`);
+                    const res = await fetch(`${GATEWAY_URL}/_internal/requests/${requestId}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        inputs = data;
+                        console.log(`[Worker] Inputs fetched successfully.`);
+                        break; // Success
+                    } else if (res.status === 404) {
+                        console.warn(`[Worker] Inputs not ready yet (404). Retrying in 1s...`);
+                    } else {
+                        console.warn(`[Worker] Failed to fetch inputs: ${res.status} ${res.statusText}`);
+                    }
+                } catch (err) {
+                    console.warn(`[Worker] Input fetch error:`, err.message);
+                }
+
+                if (attempt < 5) await new Promise(r => setTimeout(r, 1000));
+            }
+
+            // 3. Execute
+            const result = await executeFunction(code, inputs);
 
             // 3. Report
-            await sendResult(requestIdHex, result);
+            await sendResult(requestId, result);
 
         } catch (err) {
             console.error(`[Worker] Job failed for ${requestId}:`, err);

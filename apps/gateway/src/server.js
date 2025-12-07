@@ -9,6 +9,7 @@ import { receiveWorkerResult } from "./worker-results.js";
 import { deployRepo } from "./services/github-deployer.js";
 import path from "path";
 import fs from "fs";
+import { supabase } from "./db/supabase.js";
 
 // Load Root .env
 const rootEnv = path.resolve(process.cwd(), "../../.env");
@@ -141,13 +142,29 @@ app.post('/deploy', async (request, reply) => {
 
 app.post("/_internal/worker-result", receiveWorkerResult);
 
+app.get("/_internal/requests/:requestId", async (req, reply) => {
+  const { requestId } = req.params;
+  console.log(`[Gateway] Internal req for ${requestId}`);
 
-app.setErrorHandler((error, request, reply) => {
-  request.log.error(error);
+  const { data, error } = await supabase
+    .from('requests')
+    .select('result') // 'result' col holds the inputs for pending reqs
+    .eq('request_id', requestId)
+    .maybeSingle();
 
-  reply.status(500).send({
-    error: "Unhandled gateway exception"
-  });
+  if (error) {
+    console.error(`[Gateway] Supabase error for ${requestId}:`, error);
+  }
+
+  if (error || !data) {
+    console.warn(`[Gateway] Inputs not found for ${requestId}`);
+    return reply.status(404).send({
+      error: "Request inputs not found"
+    });
+  }
+
+  console.log(`[Gateway] Sending inputs for ${requestId}`);
+  return data.result;
 });
 
 

@@ -74,9 +74,13 @@ export async function deployRepo(wallet, repoUrl, functionNames, baseDir = "func
                 // Prepare Env Vars
                 const define = {};
                 if (envVars) {
+                    console.log(`[Deploy ${deployId}] Env Vars received:`, envVars);
                     for (const [key, val] of Object.entries(envVars)) {
                         define[`process.env.${key}`] = JSON.stringify(val);
                     }
+                    console.log(`[Deploy ${deployId}] Define keys:`, define);
+                } else {
+                    console.log(`[Deploy ${deployId}] No Env Vars received.`);
                 }
 
                 await esbuild.build({

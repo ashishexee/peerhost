@@ -32,7 +32,8 @@ export async function sendResult(requestId, result) {
         const resultHash = ethers.keccak256(ethers.toUtf8Bytes(resultString));
 
         // requestId should be Hex for the contract
-        const tx = await contract.submitResult(requestId, resultHash);
+        const requestIdHex = ethers.toBeHex(BigInt(requestId), 32);
+        const tx = await contract.submitResult(requestIdHex, resultHash);
         console.log(`[Result] Transaction sent: ${tx.hash}`);
 
         // Wait for 1 confirmation to ensure proof is mined

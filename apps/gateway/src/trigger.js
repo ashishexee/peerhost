@@ -53,18 +53,22 @@ export async function triggerExecution({ request, hash }) {
         (l) => l.fragment?.name === "ExecutionRequested"
     );
 
-    const requestId = event?.args?.requestId?.toString();
+    const requestId = BigInt(event?.args?.requestId).toString();
 
     if (!requestId) {
         throw new Error("Failed to extract requestId");
     }
 
     // Persist the pending request in Supabase
+    console.log(`[Trigger] Inserting requestId ${requestId} into Supabase with result:`, JSON.stringify({ http: request.http }));
+
     const { error } = await supabase
         .from('requests')
         .insert({
             request_id: requestId,
             status: 'PENDING',
+            // Stash inputs in 'result' col since 'inputs' col doesn't exist
+            result: { http: request.http },
             created_at: new Date().toISOString()
         });
 
@@ -73,6 +77,8 @@ export async function triggerExecution({ request, hash }) {
         // We warn but do not throw, as the chain event happened.
         // The subscription might miss it if logic relies solely on DB existence,
         // but `waitForWorkerResult` might just listen to "updates".
+    } else {
+        console.log(`[Trigger] Successfully inserted requestId ${requestId}`);
     }
 
     return { requestId };
