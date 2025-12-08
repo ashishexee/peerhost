@@ -13,6 +13,7 @@ import AuthCallback from './components/AuthCallback';
 import WorkerRegistration from './components/WorkerRegistration';
 import LearnMore from './components/LearnMore';
 import Docs from './components/Docs';
+import ExecutionFlow from './components/ExecutionFlow';
 import { Earnings } from './components/Earnings';
 import { Toaster } from 'sonner';
 
@@ -29,6 +30,7 @@ function App() {
                      <main>
                         <Hero />
                         <Architecture />
+                        <ExecutionFlow />
                         <Features />
                      </main>
                  </div>
