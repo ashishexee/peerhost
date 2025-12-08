@@ -51,14 +51,14 @@ All contracts verified on PolygonScan ✅
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-💎 KEY VALUE PROPS
+## 💎 Key Value Propositions
 
-✓ Universal Monetization - Agents & Humans pay per request
-✓ Agent Native - Seamless integration with LLMs via MCP
-✓ Unstoppable - Censorship-resistant decentralized grid
-✓ Serverless - No infra management, just code
-✓ Crypto Native - USDC settlement on Polygon
-✓ Verifiable - Trustless execution guarantees
+- ✅ **Universal Monetization** — Pay-per-request for humans & agents  
+- ✅ **Agent Native** — Seamless MCP + LLM integration  
+- ✅ **Unstoppable** — Truly censorship-resistant execution  
+- ✅ **Serverless** — No infrastructure management  
+- ✅ **Crypto Native** — USDC settlement on Polygon for Paid Endpoints
+- ✅ **Verifiable** — Trustless execution guarantees  
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
