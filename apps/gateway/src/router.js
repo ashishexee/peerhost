@@ -70,25 +70,24 @@ export default async function router(req, reply) {
                 reply.header("WWW-Authenticate", `x402 ${x402Params}`);
                 reply.type('application/json');
 
+                const atomicPrice = Math.floor(price * 1_000_000).toString(); // USDC 6 decimals
+
                 return reply.status(402).send({
-                    error: "Payment Required",
-                    requirements: [
+                    x402Version: 1,
+                    error: "X-PAYMENT header is required",
+                    accepts: [
                         {
-                            scheme: "x402",
+                            scheme: "exact",
                             network: "polygon-amoy",
+                            maxAmountRequired: atomicPrice,
+                            resource: `https://${req.headers.host}${req.url}`,
+                            description: `Execution of ${project}/${fn}`,
+                            mimeType: "application/json",
                             payTo: beneficiary,
-                            price: price.toString(),
-                            resourceUrl: `https://${req.headers.host}${req.url}`,
-                            description: `Execution of ${project}/${fn}`
+                            maxTimeoutSeconds: 60,
+                            asset: "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582"
                         }
-                    ],
-                    details: {
-                        amount: price,
-                        currency: "USDC",
-                        receiver: beneficiary,
-                        resource_id: `${wallet}/${project}/${fn}`,
-                        facilitator: "https://x402-amoy.polygon.technology"
-                    }
+                    ]
                 });
             }
 
