@@ -68,6 +68,7 @@ export default async function router(req, reply) {
                 })).toString('base64')}", access_type="bearer"`;
 
                 reply.header("WWW-Authenticate", `x402 ${x402Params}`);
+                reply.type('application/json');
 
                 return reply.status(402).send({
                     error: "Payment Required",
@@ -77,7 +78,7 @@ export default async function router(req, reply) {
                             network: "polygon-amoy",
                             payTo: beneficiary,
                             price: price.toString(),
-                            resourceUrl: `https://${req.headers.host}/run/${wallet}/${project}/${fn}`,
+                            resourceUrl: `https://${req.headers.host}${req.url}`,
                             description: `Execution of ${project}/${fn}`
                         }
                     ],
