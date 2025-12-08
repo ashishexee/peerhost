@@ -138,7 +138,8 @@ async function serveManifest(req, reply, wallet, project, host) {
 // Path-based routing for Vercel (where wildcard subdomains are not supported)
 app.all("/run/:wallet/:project/:fn", async (req, reply) => {
   try {
-    const { wallet, project, fn } = req.params;
+    const { wallet: rawWallet, project, fn } = req.params;
+    const wallet = rawWallet?.toLowerCase();
 
     if (!wallet) {
       return reply.status(400).send({ error: "Invalid path parameters" });
