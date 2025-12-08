@@ -76,6 +76,53 @@ Workers compete to execute requests and must submit **cryptographic proofs of re
 This creates a **self-incentivizing compute network**.
 
 ---
+## Platform Tour
+
+<table width="100%">
+  <tr>
+    <td width="33%" align="center">
+      <img src="assets/screenshots/landing_page.png" width="100%" alt="Landing Page">
+      <br><b>Landing Page</b>
+    </td>
+    <td width="33%" align="center">
+      <img src="assets/screenshots/deploy.png" width="100%" alt="Deployment">
+      <br><b>Deployment</b>
+    </td>
+    <td width="33%" align="center">
+      <img src="assets/screenshots/config_deploy.png" width="100%" alt="Configuration">
+      <br><b>Configuration</b>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%" align="center">
+      <img src="assets/screenshots/all_projects.png" width="100%" alt="All Projects">
+      <br><b>All Projects</b>
+    </td>
+    <td width="33%" align="center">
+      <img src="assets/screenshots/run_a_worker_node.png" width="100%" alt="Worker Node">
+      <br><b>Worker Node</b>
+    </td>
+    <td width="33%" align="center">
+      <img src="assets/screenshots/earning.png" width="100%" alt="Earnings">
+      <br><b>Earnings</b>
+    </td>
+  </tr>
+</table>
+
+<table width="100%">
+  <tr>
+    <td width="50%" align="center">
+      <img src="assets/screenshots/docs.png" width="100%" alt="Documentation">
+      <br><b>Documentation</b>
+    </td>
+    <td width="50%" align="center">
+      <img src="assets/screenshots/cursor.png" width="100%" alt="AI Integration">
+      <br><b>AI Integration</b>
+    </td>
+  </tr>
+</table>
+
+---
 
 ## High-Level Architecture
 
