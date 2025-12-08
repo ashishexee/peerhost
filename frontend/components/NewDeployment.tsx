@@ -442,7 +442,7 @@ export default function NewDeployment() {
                                 defaultValue={selectedRepo.name}
                                 className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-white/30"
                             />
-                            <p className="text-xs text-gray-500 mt-2">URL: <code>{address?.slice(0, 6)}...localhost:3001/PROJECT_NAME/fn</code></p>
+                            <p className="text-xs text-gray-500 mt-2">URL: <code>{address?.slice(0, 6)}...peerhost-jl8u.vercel.app/{'{'}PROJECT_NAME{'}'}/fn</code></p>
                         </div>
                         <div>
                             <label className="block text-sm font-semibold text-gray-400 mb-2">Base Directory</label>

@@ -5,7 +5,7 @@ import axios from "axios";
 const require = createRequire(import.meta.url);
 const ExecutionABI = require("./abi/ExecutionCoordinator.json");
 
-const GATEWAY_URL = process.env.GATEWAY_URL || "http://localhost:3001";
+const GATEWAY_URL = process.env.GATEWAY_URL || "https://peerhost-jl8u.vercel.app";
 
 export async function sendResult(requestId, result) {
     const RPC_URL = process.env.RPC_URL;

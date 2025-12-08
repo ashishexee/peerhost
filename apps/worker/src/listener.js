@@ -38,7 +38,7 @@ export async function startListener() {
             const code = await fetchFunctionCode(cid);
 
             // 2. Fetch Inputs (from Gateway)
-            const GATEWAY_URL = process.env.GATEWAY_URL || "http://localhost:3001";
+            const GATEWAY_URL = process.env.GATEWAY_URL || "https://peerhost-jl8u.vercel.app";
             let inputs = {};
 
             // Retry loop for inputs (handling race condition where Gateway persists after event)

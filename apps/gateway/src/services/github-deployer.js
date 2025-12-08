@@ -176,7 +176,7 @@ export async function deployRepo(wallet, repoUrl, functionNames, baseDir = "func
                 results.push({
                     function: fnFile,
                     success: true,
-                    url: `http://${wallet}.localhost:3001/${repoName}/${cleanFnName}`,
+                    url: `https://${wallet}.peerhost-jl8u.vercel.app/${repoName}/${cleanFnName}`,
                     cid: cid
                 });
 
