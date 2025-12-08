@@ -7,6 +7,7 @@ import * as esbuild from "esbuild";
 import { createClient } from "@supabase/supabase-js";
 import util from "util";
 import os from "os";
+import AdmZip from "adm-zip";
 
 const execAsync = util.promisify(exec);
 
@@ -40,18 +41,55 @@ export async function deployRepo(wallet, repoUrl, functionNames, baseDir = "func
     }
 
     try {
-        // 1. Clone (Once)
-        console.log(`[Deploy ${deployId}] Cloning...`);
+        // 1. Download & Extract Zip (Git-free)
+        console.log(`[Deploy ${deployId}] Downloading Zip...`);
         await fs.ensureDir(workDir);
 
-        let cloneCommand = `git clone ${repoUrl} .`;
+        // Parse owner/repo from URL
+        // Expected format: https://github.com/OWNER/REPO.git or https://github.com/OWNER/REPO
+        const urlParts = repoUrl.replace(".git", "").split("/");
+        const repoOwner = urlParts[urlParts.length - 2];
+        const repoNameClean = urlParts[urlParts.length - 1];
+
+        // Construct Zip URL from API (supports private repos with token)
+        const zipUrl = `https://api.github.com/repos/${repoOwner}/${repoNameClean}/zipball/main`; // Default to main
+        // Note: In a robust app, we should fetch default branch first. For now, we try 'main'. 
+        // If 'main' fails, one could try 'master', but let's stick to 'main' for MVP or rely on the redirect?
+        // Actually, /zipball without ref downloads default branch.
+        const zipDownloadUrl = `https://api.github.com/repos/${repoOwner}/${repoNameClean}/zipball`;
+
+        const headers = {
+            "User-Agent": "PeerHost-Deployer",
+            "Accept": "application/vnd.github+json"
+        };
         if (gitToken) {
-            // Insert token into URL: https://TOKEN@github.com/...
-            const authedUrl = repoUrl.replace("https://", `https://${gitToken}@`);
-            cloneCommand = `git clone ${authedUrl} .`;
+            headers["Authorization"] = `token ${gitToken}`;
         }
 
-        await execAsync(cloneCommand, { cwd: workDir });
+        const response = await fetch(zipDownloadUrl, { headers });
+        if (!response.ok) {
+            throw new Error(`Failed to download repo: ${response.statusText} (Ensure 'main' branch exists or token is valid)`);
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        const zip = new AdmZip(buffer);
+        zip.extractAllTo(workDir, true);
+
+        // GitHub zip extracts to a subfolder like 'user-repo-sha'
+        // We need to move contents up to workDir
+        const files = await fs.readdir(workDir);
+        const extractDir = files.find(f => fs.statSync(path.join(workDir, f)).isDirectory());
+
+        if (extractDir) {
+            const extractPath = path.join(workDir, extractDir);
+            const contentFiles = await fs.readdir(extractPath);
+            for (const file of contentFiles) {
+                await fs.move(path.join(extractPath, file), path.join(workDir, file), { overwrite: true });
+            }
+            await fs.remove(extractPath);
+        }
 
         // 2. Install Deps (if package.json exists)
         if (await fs.pathExists(path.join(workDir, "package.json"))) {
