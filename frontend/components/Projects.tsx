@@ -60,7 +60,7 @@ export default function Projects() {
     };
 
     const copyProjectUrl = (subdomain: string, project: string) => {
-        const url = `https://${subdomain}.peerhost-jl8u.vercel.app/${project}`;
+        const url = `https://peerhost-jl8u.vercel.app/run/${subdomain}/${project}`;
         navigator.clipboard.writeText(url);
         toast.success('Project URL copied to clipboard');
     };
@@ -126,7 +126,7 @@ export default function Projects() {
                                     Copy Project URL
                                 </button>
                                 <a
-                                    href={`https://${group.wallet}.peerhost-jl8u.vercel.app/${group.name}`} // Dev URL
+                                    href={`https://peerhost-jl8u.vercel.app/run/${group.wallet}/${group.name}`} // Dev URL
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="px-3 flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"

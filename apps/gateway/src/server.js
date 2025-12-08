@@ -122,7 +122,7 @@ async function serveManifest(req, reply, wallet, project, host) {
           body: { type: "object", description: "JSON payload" }
         }
       },
-      url: `http://${host}/${project}/${f.function_name}`,
+      url: `https://${host}/run/${wallet}/${project}/${f.function_name}`,
       pricing: {
         price: f.price || 0,
         currency: "USDC",
@@ -134,6 +134,32 @@ async function serveManifest(req, reply, wallet, project, host) {
   return reply.send(manifest);
 }
 
+
+// Path-based routing for Vercel (where wildcard subdomains are not supported)
+app.all("/run/:wallet/:project/:fn", async (req, reply) => {
+  try {
+    const { wallet, project, fn } = req.params;
+
+    if (!wallet) {
+      return reply.status(400).send({ error: "Invalid path parameters" });
+    }
+
+    if (fn === 'mcp.json') {
+      return await serveManifest(req, reply, wallet, project, req.headers.host);
+    }
+
+    req.peerhost = {
+      wallet,
+      project,
+      fn
+    };
+
+    return await router(req, reply);
+  } catch (err) {
+    req.log.error(err);
+    return reply.status(500).send({ error: "Gateway internal error" });
+  }
+});
 
 app.all("/:project/:fn", async (req, reply) => {
   try {
