@@ -11,17 +11,25 @@ While PeerHost is the **native execution layer for the Agentic Economy**, its op
 
 ---
 
-## Why PeerHost Exists
+## Core Principles
 
-Modern backend infrastructure is fast, but fundamentally centralized. Even “serverless” platforms ultimately depend on a small number of cloud providers, creating risks around:
+### 1. Universal Monetization (Agents + Humans)
 
-* Vendor lock-in
-* Regional outages
-* Silent censorship
-* Opaque execution guarantees
-* Rising operational costs at scale
+PeerHost treats every function call as a potential transaction.
 
-If one node goes offline, another node takes its place automatically.
+*   **x402 Protocol**: Built-in specialized header support for HTTP 402 Payment Required.
+*   **Agent-Optimized**: AI Agents can autonomously negotiate, pay for, and consume APIs using the Model Context Protocol (MCP).
+*   **Human-Compatible**: Works seamlessly with standard dApps and wallets.
+
+---
+
+### 2. Decentralized Execution Grid
+
+Code does not run on a single server. It runs on a global grid of independent workers.
+
+*   **No Single Point of Failure**: Request routing is dynamic and redundant.
+*   **Censorship Resistance**: Code cannot be taken down by a single entity.
+*   **Auto-Healing**: If one node goes offline, another node takes its place automatically.
 
 ---
 

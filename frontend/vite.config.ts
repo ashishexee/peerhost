@@ -18,6 +18,10 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@': path.resolve(__dirname, '.'),
       }
-    }
+    },
+    allowedHosts: [
+      ".ngrok-free.de",
+      "localhost"
+    ]
   };
 });
