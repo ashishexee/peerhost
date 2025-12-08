@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 import * as esbuild from "esbuild";
 import { createClient } from "@supabase/supabase-js";
 import util from "util";
+import os from "os";
 
 const execAsync = util.promisify(exec);
 
@@ -23,7 +24,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 export async function deployRepo(wallet, repoUrl, functionNames, baseDir = "functions", envVars = {}, gitToken = null, projectNameOverride = null, monetization = null) {
     const deployId = uuidv4();
-    const workDir = path.resolve(process.cwd(), "tmp", deployId);
+    const workDir = path.resolve(os.tmpdir(), "peerhost", deployId);
 
 
     // Normalize input to array
