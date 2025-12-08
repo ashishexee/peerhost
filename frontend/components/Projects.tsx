@@ -36,7 +36,7 @@ export default function Projects() {
 
             // Group by project name
             const groups: { [key: string]: ProjectGroup } = {};
-            
+
             (data || []).forEach((fn: any) => {
                 if (!groups[fn.project]) {
                     groups[fn.project] = {
@@ -60,7 +60,7 @@ export default function Projects() {
     };
 
     const copyProjectUrl = (subdomain: string, project: string) => {
-        const url = `http://${subdomain}.localhost:3001/${project}`;
+        const url = `https://${subdomain}.peerhost-jl8u.vercel.app/${project}`;
         navigator.clipboard.writeText(url);
         toast.success('Project URL copied to clipboard');
     };
@@ -91,7 +91,7 @@ export default function Projects() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {projectGroups.map((group) => (
                         <div key={group.name} className="bg-gradient-to-br from-white/5 to-white/0 border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all group flex flex-col h-full">
-                            
+
                             <div className="flex justify-between items-start mb-4">
                                 <div className="p-3 bg-purple-500/10 rounded-lg text-purple-400">
                                     <Folder size={20} />
@@ -104,7 +104,7 @@ export default function Projects() {
                             <h3 className="text-xl font-bold text-white mb-2 truncate" title={group.name}>
                                 {group.name}
                             </h3>
-                            
+
                             <div className="flex-1 mb-6">
                                 <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Deployed Endpoints</h4>
                                 <div className="flex flex-wrap gap-2">
@@ -118,15 +118,15 @@ export default function Projects() {
                             </div>
 
                             <div className="flex gap-2 mt-auto">
-                                <button 
+                                <button
                                     onClick={() => copyProjectUrl(group.wallet, group.name)}
                                     className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg py-2 text-sm font-medium transition-colors text-white"
                                 >
                                     <Copy size={14} />
                                     Copy Project URL
                                 </button>
-                                <a 
-                                    href={`http://${group.wallet}.localhost:3001/${group.name}`} // Dev URL
+                                <a
+                                    href={`https://${group.wallet}.peerhost-jl8u.vercel.app/${group.name}`} // Dev URL
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="px-3 flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"
