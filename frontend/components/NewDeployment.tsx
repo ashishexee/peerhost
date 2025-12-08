@@ -24,6 +24,18 @@ export default function NewDeployment() {
       setEnvVars(newVars);
   };
 
+  // Monetization State
+  const [isMonetized, setIsMonetized] = useState(false);
+  const [price, setPrice] = useState('');
+  const [beneficiary, setBeneficiary] = useState('');
+
+  // Sync beneficiary with wallet address if not set
+  React.useEffect(() => {
+    if (address && !beneficiary) {
+        setBeneficiary(address);
+    }
+  }, [address]);
+
   // OAuth State
   const [gitToken, setGitToken] = useState<string | null>(localStorage.getItem('git_token'));
 
@@ -213,9 +225,9 @@ export default function NewDeployment() {
                 envVars: cleanEnvVars,
                 gitToken: gitToken,
                 // x402 Metadata
-                monetization: (document.getElementById('monetization-toggle') as HTMLInputElement)?.checked ? {
-                    price: (document.getElementById('price-input') as HTMLInputElement)?.value || '0',
-                    beneficiary: (document.getElementById('beneficiary-input') as HTMLInputElement)?.value
+                monetization: isMonetized ? {
+                    price: price || '0',
+                    beneficiary: beneficiary || address
                 } : null
             })
         });
@@ -467,39 +479,42 @@ export default function NewDeployment() {
                                 type="checkbox" 
                                 id="monetization-toggle"
                                 className="sr-only peer"
-                                onChange={(e) => {
-                                    const section = document.getElementById('monetization-inputs');
-                                    if(section) section.style.display = e.target.checked ? 'block' : 'none';
-                                }}
+                                checked={isMonetized}
+                                onChange={(e) => setIsMonetized(e.target.checked)}
                             />
                             <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
                         </label>
                     </div>
 
-                    <div id="monetization-inputs" className="hidden space-y-4 animate-in fade-in slide-in-from-top-2">
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-xs font-semibold text-purple-300 mb-1">Price per Execution (USDC)</label>
-                                <input 
-                                    type="number" 
-                                    id="price-input"
-                                    step="0.0001"
-                                    placeholder="0.01"
-                                    className="w-full bg-black/50 border border-purple-500/30 rounded-lg px-4 py-2 text-white outline-none focus:border-purple-500 font-mono"
-                                />
+                    {isMonetized && (
+                        <div id="monetization-inputs" className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-semibold text-purple-300 mb-1">Price per Execution (USDC)</label>
+                                    <input 
+                                        type="number" 
+                                        id="price-input"
+                                        step="0.0001"
+                                        placeholder="0.01"
+                                        value={price}
+                                        onChange={(e) => setPrice(e.target.value)}
+                                        className="w-full bg-black/50 border border-purple-500/30 rounded-lg px-4 py-2 text-white outline-none focus:border-purple-500 font-mono"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-purple-300 mb-1">Beneficiary Address</label>
+                                    <input 
+                                        type="text" 
+                                        id="beneficiary-input"
+                                        value={beneficiary}
+                                        onChange={(e) => setBeneficiary(e.target.value)}
+                                        placeholder="0x..."
+                                        className="w-full bg-black/50 border border-purple-500/30 rounded-lg px-4 py-2 text-white outline-none focus:border-purple-500 font-mono text-sm"
+                                    />
+                                </div>
                             </div>
-                            <div>
-                                <label className="block text-xs font-semibold text-purple-300 mb-1">Beneficiary Address</label>
-                                <input 
-                                    type="text" 
-                                    id="beneficiary-input"
-                                    defaultValue={address || ''}
-                                    placeholder="0x..."
-                                    className="w-full bg-black/50 border border-purple-500/30 rounded-lg px-4 py-2 text-white outline-none focus:border-purple-500 font-mono text-sm"
-                                />
-                            </div>
-                         </div>
-                    </div>
+                        </div>
+                    )}
               </div>
 
               <button 
