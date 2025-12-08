@@ -30,7 +30,8 @@ await app.register(helmet);
 
 await app.register(cors, {
   origin: true,
-  credentials: true
+  credentials: true,
+  exposedHeaders: ["WWW-Authenticate", "x-payment", "x-protocol-payment"]
 });
 
 await app.register(rateLimit, {

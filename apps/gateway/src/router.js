@@ -59,6 +59,16 @@ export default async function router(req, reply) {
 
             // A. No Payment Header -> 402 Challenge
             if (!paymentHeader) {
+                // Return Standard x402 Header
+                const x402Params = `token="${Buffer.from(JSON.stringify({
+                    amount: price,
+                    currency: "USDC",
+                    receiver: beneficiary,
+                    network: "polygon-amoy"
+                })).toString('base64')}", access_type="bearer"`;
+
+                reply.header("WWW-Authenticate", `x402 ${x402Params}`);
+
                 return reply.status(402).send({
                     error: "Payment Required",
                     details: {
