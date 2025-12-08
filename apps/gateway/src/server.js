@@ -11,15 +11,12 @@ import path from "path";
 import fs from "fs";
 import { supabase } from "./db/supabase.js";
 
-// Load Root .env
 const rootEnv = path.resolve(process.cwd(), "../../.env");
 console.log(`[Gateway] Loading .env from: ${rootEnv}`);
 
 if (fs.existsSync(rootEnv)) {
   const result = dotenv.config({ path: rootEnv });
-  // if (result.error) console.error("[Gateway] dotenv error:", result.error);
 } else {
-  // Fallback or just defaults (e.g. if running from root)
   dotenv.config();
 }
 
@@ -94,11 +91,59 @@ app.get('/auth/github/callback', async (req, reply) => {
   }
 });
 
+async function serveManifest(req, reply, wallet, project, host) {
+  if (!wallet) return reply.status(400).send({ error: "Invalid wallet subdomain" });
+
+  const { data: fns, error } = await supabase
+    .from('functions')
+    .select('function_name, price, beneficiary')
+    .eq('wallet', wallet)
+    .eq('project', project);
+
+  if (error) {
+    req.log.error("Supabase Error: " + error.message);
+    throw error;
+  }
+
+  if (!fns || fns.length === 0) {
+    return reply.status(404).send({ error: "Project not found or has no functions" });
+  }
+
+  const manifest = {
+    schema_version: "v1",
+    name_for_model: project,
+    description_for_model: `Serverless tools provided by ${wallet}`,
+    tools: fns.map(f => ({
+      name: f.function_name,
+      description: `Executes ${f.function_name}. Price: ${f.price || 0} USDC.`,
+      parameters: {
+        type: "object",
+        properties: {
+          body: { type: "object", description: "JSON payload" }
+        }
+      },
+      url: `http://${host}/${project}/${f.function_name}`,
+      pricing: {
+        price: f.price || 0,
+        currency: "USDC",
+        beneficiary: f.beneficiary
+      }
+    }))
+  };
+
+  return reply.send(manifest);
+}
+
 
 app.all("/:project/:fn", async (req, reply) => {
   try {
     const host = req.headers['x-forwarded-host'] || req.headers.host;
     const wallet = parseWalletFromHost(host);
+    const { project, fn } = req.params;
+
+    if (fn === 'mcp.json') {
+      return await serveManifest(req, reply, wallet, project, host);
+    }
 
     if (!wallet) {
       return reply.status(400).send({
@@ -108,8 +153,8 @@ app.all("/:project/:fn", async (req, reply) => {
 
     req.peerhost = {
       wallet,
-      project: req.params.project,
-      fn: req.params.fn
+      project,
+      fn
     };
 
     return await router(req, reply);
@@ -123,7 +168,6 @@ app.all("/:project/:fn", async (req, reply) => {
   }
 });
 
-// Deployment Endpoint
 app.post('/deploy', async (request, reply) => {
   const { wallet, repoUrl, projectName, functionName, baseDir, envVars, gitToken, monetization } = request.body || {};
 
@@ -148,7 +192,7 @@ app.get("/_internal/requests/:requestId", async (req, reply) => {
 
   const { data, error } = await supabase
     .from('requests')
-    .select('result') // 'result' col holds the inputs for pending reqs
+    .select('result')
     .eq('request_id', requestId)
     .maybeSingle();
 

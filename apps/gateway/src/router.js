@@ -26,10 +26,9 @@ export default async function router(req, reply) {
         });
 
         // ---------------------------------------------------------
-        // x402 Commerce Layer Check (Fully Functional)
+        // x402 Commerce Layer Check 
         // ---------------------------------------------------------
 
-        // 1. Fetch function metadata from Supabase
         // 1. Fetch function metadata from Supabase
         req.log.info(`[x402] Checking price for: ${wallet}/${project}/${fn}`);
 
@@ -73,7 +72,7 @@ export default async function router(req, reply) {
             }
 
             // B. Payment Header Present -> Verification (Mock for v1)
-            const isValid = paymentHeader.length > 10;
+            const isValid = paymentHeader.length > 10; // Mock verification
 
             if (!isValid) {
                 return reply.status(403).send({
@@ -81,10 +80,33 @@ export default async function router(req, reply) {
                 });
             }
 
-            req.log.info(`Payment Verified: ${price} USDC to ${beneficiary}`);
+            // Payment Verified! Log the transaction for Earnings Dashboard
+            // Fire-and-forget (don't block execution)
+            (async () => {
+                try {
+                    const payerWallet = req.headers['x-wallet'] || '0x0000000000000000000000000000000000000000';
+                    req.log.info(`[x402] Logging transaction... Payer: ${payerWallet}, Amount: ${price}`);
+
+                    const { error: insertError } = await supabase.from('transactions').insert({
+                        beneficiary: beneficiary,
+                        payer: payerWallet,
+                        amount: price,
+                        project: project,
+                        function_name: fn,
+                        signature: typeof paymentHeader === 'string' ? paymentHeader : JSON.stringify(paymentHeader),
+                        resource_id: `${wallet}/${project}/${fn}`
+                    });
+
+                    if (insertError) req.log.error(`[x402] DB Error: ${insertError.message}`);
+                    else req.log.info(`[x402] Transaction logged!`);
+                } catch (logErr) {
+                    req.log.error(`[x402] Logging Failed: ${logErr.message}`);
+                }
+            })();
         }
         // ---------------------------------------------------------
 
+        // 3. Trigger Execution (Only if paid or free)
         const { requestId } = await triggerExecution(normalizedRequest);
 
         // wait for the reponse from the worker
@@ -101,8 +123,7 @@ export default async function router(req, reply) {
         }
         return reply.send(finalResult.body);
 
-    }
-    catch (err) {
+    } catch (err) {
         req.log.error(err);
 
         if (err.code === "EXECUTION_TIMEOUT") {

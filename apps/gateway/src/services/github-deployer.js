@@ -32,6 +32,11 @@ export async function deployRepo(wallet, repoUrl, functionNames, baseDir = "func
     const repoName = projectNameOverride || repoUrl.split("/").pop().replace(".git", "");
 
     console.log(`[Batch Deploy ${deployId}] Starting for ${repoUrl} -> ${fns.length} functions (Project: ${repoName})`);
+    if (monetization) {
+        console.log(`[Batch Deploy ${deployId}] Monetization Request:`, monetization);
+    } else {
+        console.log(`[Batch Deploy ${deployId}] No Monetization Request`);
+    }
 
     try {
         // 1. Clone (Once)
