@@ -21,7 +21,6 @@ const Navbar = () => {
 
   const handleConnect = async () => {
     await connect();
-    // After connection, navigate to deploy dashboard
     navigate('/deploy');
   };
 
@@ -41,7 +40,12 @@ const Navbar = () => {
              PeerHost
           </a>
           <div className="hidden lg:flex items-center gap-1">
-            <NavItem label="Docs" />
+            <button 
+                onClick={() => navigate('/docs')}
+                className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1 px-2 py-1 whitespace-nowrap"
+            >
+                Docs
+            </button>
             <button 
                 onClick={() => navigate('/workers')}
                 className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1 px-2 py-1 whitespace-nowrap"

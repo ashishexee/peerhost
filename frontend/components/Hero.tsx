@@ -50,7 +50,7 @@ const Hero = () => {
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/5 hover:border-[#8247E5]/50 hover:bg-[#8247E5]/10 transition-all cursor-pointer backdrop-blur-sm group"
           >
             <span className="text-xs font-medium text-accents-5 group-hover:text-white transition-colors">
-              Execution Network on <span className="text-white">Polygon</span>
+              Native x402 Execution on <span className="text-white">Polygon</span>
             </span>
             <ExternalLink className="w-3 h-3 text-gray-600 group-hover:text-[#8247E5] ml-1" />
           </a>
@@ -63,7 +63,7 @@ const Hero = () => {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-accents-4 leading-[1.1] max-w-5xl mx-auto"
         >
-          Deploy backends on a decentralized execution network.
+          The Decentralized & Monetizable Serverless Network.
         </motion.h1>
         
         {/* Subheading */}
@@ -71,9 +71,9 @@ const Hero = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-lg md:text-xl text-accents-5 max-w-2xl mx-auto mb-10 leading-relaxed"
+          className="text-lg md:text-xl text-accents-5 max-w-3xl mx-auto mb-10 leading-relaxed"
         >
-          PeerHost is a trustless, serverless, peer-to-peer backend execution layer powered by IPFS, on-chain coordination, and a global network of sandboxed workers. Build APIs, automate logic, and scale compute without owning servers.
+          Run your code on a global, censorship-resistant worker grid. Monetize natively with the x402 Protocol. PeerHost is the execution layer for the Agentic Economy, where AI Agents and Humans pay for compute.
         </motion.p>
         
         {/* Buttons */}
