@@ -4,3 +4,4 @@
 /packages/contracts/lib
 /packages/contracts/cache
 /packages/contracts/out
+/apps/mcp-client/node_modules

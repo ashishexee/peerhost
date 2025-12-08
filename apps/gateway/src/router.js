@@ -2,6 +2,7 @@ import { buildRequest } from "./request-builder.js";
 import { triggerExecution } from "./trigger.js";
 import { waitForWorkerResult } from "./worker-results.js";
 import { validateProjectName, validateFunctionName } from "./utils/validators.js";
+import { supabase } from "./db/supabase.js";
 
 
 export default async function router(req, reply) {
@@ -24,6 +25,88 @@ export default async function router(req, reply) {
             functionName: fn
         });
 
+        // ---------------------------------------------------------
+        // x402 Commerce Layer Check 
+        // ---------------------------------------------------------
+
+        // 1. Fetch function metadata from Supabase
+        req.log.info(`[x402] Checking price for: ${wallet}/${project}/${fn}`);
+
+        const { data: meta, error: metaError } = await supabase
+            .from('functions')
+            .select('price, beneficiary')
+            .eq('wallet', wallet)
+            .eq('project', project)
+            .eq('function_name', fn)
+            .single();
+
+        if (metaError && metaError.code !== 'PGRST116') {
+            req.log.error("Failed to fetch function metadata: " + metaError.message);
+        }
+
+        if (!meta) {
+            req.log.warn(`[x402] Metadata not found (or no rows) for ${wallet}/${project}/${fn}`);
+        } else {
+            req.log.info(`[x402] Found meta: Price=${meta.price}, Beneficiary=${meta.beneficiary}`);
+        }
+
+        const price = meta?.price || 0;
+        const beneficiary = meta?.beneficiary || wallet;
+
+        // 2. Gate Execution
+        if (price > 0) {
+            const paymentHeader = req.headers['x-payment'] || req.headers['x-protocol-payment'];
+
+            // A. No Payment Header -> 402 Challenge
+            if (!paymentHeader) {
+                return reply.status(402).send({
+                    error: "Payment Required",
+                    details: {
+                        amount: price,
+                        currency: "USDC",
+                        receiver: beneficiary,
+                        resource_id: `${wallet}/${project}/${fn}`,
+                        facilitator: "https://x402-amoy.polygon.technology"
+                    }
+                });
+            }
+
+            // B. Payment Header Present -> Verification (Mock for v1)
+            const isValid = paymentHeader.length > 10; // Mock verification
+
+            if (!isValid) {
+                return reply.status(403).send({
+                    error: "Invalid Payment Proof"
+                });
+            }
+
+            // Payment Verified! Log the transaction for Earnings Dashboard
+            // Fire-and-forget (don't block execution)
+            (async () => {
+                try {
+                    const payerWallet = req.headers['x-wallet'] || '0x0000000000000000000000000000000000000000';
+                    req.log.info(`[x402] Logging transaction... Payer: ${payerWallet}, Amount: ${price}`);
+
+                    const { error: insertError } = await supabase.from('transactions').insert({
+                        beneficiary: beneficiary,
+                        payer: payerWallet,
+                        amount: price,
+                        project: project,
+                        function_name: fn,
+                        signature: typeof paymentHeader === 'string' ? paymentHeader : JSON.stringify(paymentHeader),
+                        resource_id: `${wallet}/${project}/${fn}`
+                    });
+
+                    if (insertError) req.log.error(`[x402] DB Error: ${insertError.message}`);
+                    else req.log.info(`[x402] Transaction logged!`);
+                } catch (logErr) {
+                    req.log.error(`[x402] Logging Failed: ${logErr.message}`);
+                }
+            })();
+        }
+        // ---------------------------------------------------------
+
+        // 3. Trigger Execution (Only if paid or free)
         const { requestId } = await triggerExecution(normalizedRequest);
 
         // wait for the reponse from the worker
@@ -40,8 +123,7 @@ export default async function router(req, reply) {
         }
         return reply.send(finalResult.body);
 
-    }
-    catch (err) {
+    } catch (err) {
         req.log.error(err);
 
         if (err.code === "EXECUTION_TIMEOUT") {

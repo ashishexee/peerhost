@@ -5,7 +5,7 @@ import {
   Book, Server, Cpu, Globe, 
   Shield, Code, Terminal, Zap,
   ChevronRight, Menu, X, ExternalLink,
-  Layers, Box
+  Layers, Box, CreditCard, Bot
 } from 'lucide-react';
 import Navbar from './Navbar';
 
@@ -31,6 +31,8 @@ const Docs = () => {
         { id: 'workers', label: 'About Workers', icon: Cpu },
         { id: 'coordinator', label: 'Execution Coordinator', icon: Shield },
         { id: 'gateway', label: 'API Gateway', icon: Server },
+        { id: 'x402', label: 'x402 Protocol', icon: CreditCard },
+        { id: 'agentic', label: 'Agentic Payments', icon: Bot },
       ]
     }
   ];
@@ -42,9 +44,11 @@ const Docs = () => {
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <h1 className="text-4xl font-bold text-white mb-6">Welcome to PeerHost Docs</h1>
             <p className="text-lg text-gray-300 leading-relaxed">
-              PeerHost is the world's first fully decentralized, serverless execution network. 
+              PeerHost is the world's first **Decentralized & Monetizable** serverless execution network. 
               We enable developers to deploy backend logic as individual functions without provisioning a single server,
-              while guaranteeing that code executes on a permissionless, verifiable global grid of workers.
+              while guaranteeing that code executes on a permissionless global grid.
+              <br/><br/>
+              Crucially, PeerHost implements the <strong>x402 Protocol</strong>, allowing any function to potentially earn revenue from both humans and AI agents.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
                <div className="p-6 rounded-xl bg-white/5 border border-white/10 hover:border-blue-500/50 transition-colors">
@@ -95,6 +99,13 @@ const Docs = () => {
             <h1 className="text-3xl font-bold text-white">Core Concepts</h1>
             
             <div className="space-y-6">
+                <section>
+                    <h2 className="text-2xl font-semibold text-green-400 mb-2">Native Monetization</h2>
+                    <p className="text-gray-300">
+                        PeerHost allows you to attach a price to any function. We use the <strong>x402 Protocol</strong> (Payment Required) to ensure that users (or AI Agents) pay your specified fee before the code is executed.
+                    </p>
+                </section>
+
                 <section>
                     <h2 className="text-2xl font-semibold text-blue-400 mb-2">Decentralized Execution</h2>
                     <p className="text-gray-300">
@@ -314,6 +325,78 @@ const Docs = () => {
                          </div>
                      </div>
                  </div>
+             </div>
+         );
+
+     case 'x402':
+         return (
+             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                 <h1 className="text-3xl font-bold text-white">x402 Protocol</h1>
+                 <p className="text-gray-300">
+                     The missing economic layer for the web. x402 (based on HTTP 402 Payment Required) is an open standard for <strong>Payment-Gated APIs</strong>.
+                 </p>
+
+                 <div className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 p-6 rounded-xl border border-purple-500/20">
+                     <h3 className="text-lg font-semibold text-purple-300 mb-2">Why 402?</h3>
+                     <p className="text-sm text-gray-400">
+                         HTTP Error Code 402 was reserved for "Payment Required" in the original internet specs but was never standardized—until now. 
+                         We use it to signal to clients (Humans or Agents) that a resource has a price.
+                     </p>
+                 </div>
+
+                 <h3 className="text-xl font-bold text-white mt-6">How It Works</h3>
+                 <div className="space-y-4">
+                     <div className="p-4 bg-white/5 rounded-lg border border-white/5">
+                         <h4 className="font-mono text-yellow-400 mb-2">1. The Challenge</h4>
+                         <p className="text-sm text-gray-400">Client requests a resource. Server responds with <code>402 Payment Required</code> and includes metadata: Price, Currency (USDC), and Beneficiary.</p>
+                     </div>
+                     <div className="p-4 bg-white/5 rounded-lg border border-white/5">
+                        <h4 className="font-mono text-green-400 mb-2">2. The Payment</h4>
+                        <p className="text-sm text-gray-400">Client pays on-chain (Polygon Amoy). This can be an instant wallet signature or an automated agent transaction.</p>
+                    </div>
+                    <div className="p-4 bg-white/5 rounded-lg border border-white/5">
+                        <h4 className="font-mono text-blue-400 mb-2">3. The Proof</h4>
+                        <p className="text-sm text-gray-400">Client retries the request with <code>X-Payment</code> header containing the proof of payment. Server validates and executes.</p>
+                    </div>
+                 </div>
+             </div>
+         );
+
+     case 'agentic':
+         return (
+             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                 <h1 className="text-3xl font-bold text-white">Agentic Payments</h1>
+                 <p className="text-gray-300">
+                     PeerHost is the <strong>Native Execution Layer for AI Agents</strong>.
+                 </p>
+
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                     <div className="p-6 bg-white/5 rounded-xl border border-white/10">
+                         <Bot className="w-8 h-8 text-pink-400 mb-4" />
+                         <h3 className="text-xl font-bold text-white mb-2">For AI Agents</h3>
+                         <p className="text-sm text-gray-400">
+                             Agents using frameworks like LangChain or our <code>llm-wallet-mcp</code> can automatically discover your tool's price regarding the <code>mcp.json</code> manifest standard and handle the negotiation autonomously.
+                         </p>
+                     </div>
+                     <div className="p-6 bg-white/5 rounded-xl border border-white/10">
+                         <Globe className="w-8 h-8 text-blue-400 mb-4" />
+                         <h3 className="text-xl font-bold text-white mb-2">For Humans</h3>
+                         <p className="text-sm text-gray-400">
+                             It's not just for bots. Developers can build premium APIs, paid content gateways, or dApps that charge per interaction without setting up Stripe or user accounts.
+                         </p>
+                     </div>
+                 </div>
+
+                 <h3 className="text-xl font-bold text-white mt-8">MCP Integration</h3>
+                 <p className="text-gray-300">
+                     Every PeerHost project automatically generates a <code>mcp.json</code> (Model Context Protocol). 
+                     When you paste your project URL into compatible AI tools (like Claude Desktop or specialized Agent Browsers), the AI instantly knows:
+                 </p>
+                 <ul className="list-disc pl-6 space-y-2 mt-4 text-gray-400 font-mono text-sm">
+                     <li>What functions are available</li>
+                     <li>Input schema (arguments)</li>
+                     <li><strong>Price per execution</strong></li>
+                 </ul>
              </div>
          );
 

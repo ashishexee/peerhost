@@ -1,40 +1,39 @@
-![PeerHost Banner](assets/banner/peerhost-banner-original.png)
+# PeerHost — The Universal Decentralized & Monetizable Serverless Network
 
-# PeerHost — The Decentralized Serverless Execution Network
+**PeerHost** is a next-generation serverless platform that evolves the cloud in two revolutionary ways:
 
-**PeerHost** is a decentralized, trust-minimized, serverless backend execution network that allows developers to deploy **functions instead of servers**. Execution is coordinated on-chain and distributed across a global network of sandboxed worker nodes, delivering infrastructure that is **resilient, censorship-resistant, and horizontally scalable by design**.
+1.  **Unstoppable Execution**: A distributed, censorship-resistant worker network coordinated on **Polygon**.
+2.  **Native Monetization**: The first platform where developers can **price their API endpoints** using the **x402 Protocol**.
 
-PeerHost removes the dependency on centralized cloud providers while preserving the simplicity of modern serverless developer experience.
+While PeerHost is the **native execution layer for the Agentic Economy**, its open monetization standard is **universally compatible**. Whether accessed by an AI Agent, a dApp, or a human developer, **PeerHost gets you paid**.
 
-**The best part of PeerHost is that users do not need to know anything about Web3, decentralization, or blockchain.** They can simply get their backend URL just like in any other serverless deployment service, while the decentralized execution happens transparently in the background.
-
----
-
-## Why PeerHost Exists
-
-Modern backend infrastructure is fast, but fundamentally centralized. Even “serverless” platforms ultimately depend on a small number of cloud providers, creating risks around:
-
-* Vendor lock-in
-* Regional outages
-* Silent censorship
-* Opaque execution guarantees
-* Rising operational costs at scale
-
-PeerHost redesigns backend infrastructure around **decentralized coordination and distributed execution**.
+**Build Unstoppable Backends. Monetize Every Request.**
 
 ---
 
 ## Core Principles
 
-### 1. Decentralized by Architecture
+### 1. Universal Monetization (Agents + Humans)
 
-PeerHost is not hosted on any single cloud provider. Function execution is performed by a **globally distributed, permissionless worker network**. No single entity controls where or how your backend executes.
+PeerHost treats every function call as a potential transaction.
 
-If one node goes offline, another node takes its place automatically.
+*   **x402 Protocol**: Built-in specialized header support for HTTP 402 Payment Required.
+*   **Agent-Optimized**: AI Agents can autonomously negotiate, pay for, and consume APIs using the Model Context Protocol (MCP).
+*   **Human-Compatible**: Works seamlessly with standard dApps and wallets.
 
 ---
 
-### 2. Security by Isolation
+### 2. Decentralized Execution Grid
+
+Code does not run on a single server. It runs on a global grid of independent workers.
+
+*   **No Single Point of Failure**: Request routing is dynamic and redundant.
+*   **Censorship Resistance**: Code cannot be taken down by a single entity.
+*   **Auto-Healing**: If one node goes offline, another node takes its place automatically.
+
+---
+
+### 3. Security by Isolation
 
 Every function execution happens inside an **ephemeral, isolated sandbox**:
 
@@ -47,7 +46,7 @@ Workers cannot persist state between executions and never receive long-lived sec
 
 ---
 
-### 3. Immutable Code Execution
+### 4. Immutable Code Execution
 
 All function code is bundled and stored on **IPFS**:
 
@@ -60,20 +59,17 @@ This guarantees that the code executed at runtime is **exactly the code the deve
 
 ---
 
-### 4. Trustless On-Chain Coordination
+### 5. Trustless On-Chain Coordination
 
-Execution is coordinated through the **Execution Coordinator smart contract** on Polygon:
+Execution is coordinated through the **Execution Coordinator smart contract** on **Polygon Amoy Testnet**:
 
-* Requests are created on-chain
-* Execution jobs are broadcast via blockchain events
-* Results are submitted on-chain
-* Disputes can be verified cryptographically
-
-No trusted central scheduler is required.
+* **Service Registration**: Functions and their prices are registered on-chain.
+* **Payment Settlement**: Uses **x402** to gate execution until payment is verified.
+* **Result Verification**: Dispute resolution and slashing happens on Polygon.
 
 ---
 
-### 5. Verifiable Proof-of-Execution
+### 6. Verifiable Proof-of-Execution
 
 Workers compete to execute requests and must submit **cryptographic proofs of result correctness**. Honest execution is rewarded, and malicious behavior can be penalized via staking and slashing mechanisms.
 
@@ -91,8 +87,8 @@ PeerHost operates as a five-layer system:
 2. **Gateway Layer**
    Authenticates, validates, canonicalizes requests and triggers on-chain execution.
 
-3. **Blockchain Coordination Layer (Polygon)**
-   Smart contracts coordinate job dispatch, result submission, and incentive settlement.
+3. **Blockchain Coordination Layer (Polygon Amoy)**
+    Smart contracts coordinate job dispatch, result submission, and incentive settlement.
 
 4. **Worker Network**
    Distributed worker nodes execute functions inside secure sandboxes.
@@ -143,6 +139,7 @@ No cold starts.
 * **API Backends** — Fast, globally available REST APIs
 * **Event & Webhook Processing** — Stripe, Twilio, GitHub, etc.
 * **dApp Backends** — Off-chain compute for Web3 frontends
+* **Agent Skills** — Monetized tools and services for AI Agents (e.g. "Search Web", "Analyze Data")
 * **Automation & Job Runners** — Deterministic background execution
 * **Micro-services at Internet Scale** — Without infrastructure overhead
 
@@ -173,10 +170,10 @@ Workers stake collateral to participate and are rewarded for correct execution, 
 
 **PeerHost is:**
 
-* A decentralized execution fabric
 * A serverless backend runtime
 * A blockchain-coordinated compute network
 * A developer infrastructure protocol
+* An **Agentic Payment Gateway**
 
 **PeerHost is not:**
 

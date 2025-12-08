@@ -10,6 +10,7 @@ export default function Sidebar() {
   const navItems = [
     { label: 'Overview', icon: LayoutGrid, path: '/deploy' },
     { label: 'Projects', icon: FolderOpen, path: '/deploy/projects' },
+    { label: 'Earnings', icon: CreditCard, path: '/deploy/earnings' },
     { label: 'Settings', icon: Settings, path: '/deploy/settings' },
   ];
 

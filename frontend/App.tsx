@@ -5,7 +5,6 @@ import Hero from './components/Hero';
 import Features from './components/Features';
 import Architecture from './components/Architecture';
 import { useWallet } from './context/WalletContext';
-
 import DashboardLayout from './components/DashboardLayout';
 import DashboardHome from './components/DashboardHome';
 import NewDeployment from './components/NewDeployment';
@@ -14,6 +13,8 @@ import AuthCallback from './components/AuthCallback';
 import WorkerRegistration from './components/WorkerRegistration';
 import LearnMore from './components/LearnMore';
 import Docs from './components/Docs';
+import ExecutionFlow from './components/ExecutionFlow';
+import { Earnings } from './components/Earnings';
 import { Toaster } from 'sonner';
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
                      <main>
                         <Hero />
                         <Architecture />
+                        <ExecutionFlow />
                         <Features />
                      </main>
                  </div>
@@ -47,13 +49,13 @@ function App() {
 
             {/* Auth Callback - Unprotected */}
             <Route path="/auth/callback" element={<AuthCallback />} />
-
             {/* Protected Dashboard Routes */}
             <Route path="/deploy" element={
                 isConnected ? <DashboardLayout /> : <Navigate to="/" replace />
             }>
                 <Route index element={<DashboardHome />} />
                 <Route path="projects" element={<Projects />} />
+                <Route path="earnings" element={<Earnings />} />
                 <Route path="new" element={<NewDeployment />} />
                 <Route path="*" element={<Navigate to="/deploy" replace />} />
             </Route>
