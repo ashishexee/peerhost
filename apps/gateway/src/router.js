@@ -71,6 +71,16 @@ export default async function router(req, reply) {
 
                 return reply.status(402).send({
                     error: "Payment Required",
+                    requirements: [
+                        {
+                            scheme: "x402",
+                            network: "polygon-amoy",
+                            payTo: beneficiary,
+                            price: price.toString(),
+                            resourceUrl: `https://${req.headers.host}/run/${wallet}/${project}/${fn}`,
+                            description: `Execution of ${project}/${fn}`
+                        }
+                    ],
                     details: {
                         amount: price,
                         currency: "USDC",
