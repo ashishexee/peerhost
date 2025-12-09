@@ -18,7 +18,10 @@ export default function Sidebar() {
   return (
     <div className="w-64 border-r border-white/10 h-screen fixed left-0 top-0 bg-black flex flex-col">
       {/* Brand */}
-      <div className="h-16 flex items-center px-6 border-b border-white/10">
+      <div
+        onClick={() => navigate('/')}
+        className="h-16 flex items-center px-6 border-b border-white/10 cursor-pointer hover:bg-white/5 transition-colors"
+      >
         <span className="font-lustra font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500">PeerHost</span>
       </div>
 
