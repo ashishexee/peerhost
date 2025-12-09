@@ -12,7 +12,6 @@ export default function Sidebar() {
     { label: 'Projects', icon: FolderOpen, path: '/deploy/projects' },
     { label: 'Use API', icon: FlaskConical, path: '/deploy/test-api' },
     { label: 'Earnings', icon: CreditCard, path: '/deploy/earnings' },
-    { label: 'Settings', icon: Settings, path: '/deploy/settings' },
   ];
 
   return (

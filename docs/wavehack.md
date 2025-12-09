@@ -1,9 +1,13 @@
-Updates in this Wave
 🛡️ PEERHOST - The Universal Monetizable Serverless Network
 
 PeerHost evolves the cloud in two revolutionary ways: Unstoppable Execution on a decentralized worker grid, and Native Monetization via the x402 Protocol. It is the execution layer for the Agentic Economy, where both Humans and AI Agents can pay for compute on-chain.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Live Deployment:** https://peerhost.vercel.app/
+**GitHub Repo:** https://github.com/ashishexee/peerhost
+**Documentation:** https://peerhost.vercel.app/docs
+**Smart Contract:** https://amoy.polygonscan.com/address/0x087a2d886fc8eadf5d03f6ea5acd0b1430c13fb8
+
 
 ⚡ WAVE 3 MAJOR UPGRADES
 
