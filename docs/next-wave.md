@@ -6,4 +6,4 @@
 
 4. add a feature for the users to add their api into our platform ( may not be feasible )
 
-5. 
+5. we will add a price model also, where the user will have to pay the price before trying this service ( this may be complext to keep this in mind )

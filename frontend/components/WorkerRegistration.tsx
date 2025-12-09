@@ -100,7 +100,7 @@ npm install" />
             </Step>
 
             <Step number={3} title="Configure Environment">
-                <p>Create a <code className="text-blue-300">.env</code> file in the <code className="text-blue-300">apps/worker</code> directory.</p>
+                <p>Create a <code className="text-blue-300">.env</code> file in the <code className="text-blue-300">/peerhost/</code> that is the root directory.</p>
                 <CodeBlock code="GATEWAY_URL=https://gateway.peerhost.net
 RPC_URL=https://polygon-rpc.com
 PRIVATE_KEY=your_wallet_private_key

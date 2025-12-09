@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Play, Plus, Trash2, Loader2, AlertCircle, CheckCircle2, DollarSign, Copy, Check } from 'lucide-react';
+import { Play, Plus, Trash2, Loader2, AlertCircle, CheckCircle2, DollarSign, Copy, Check, Contact } from 'lucide-react';
 import { useWallet } from '../context/WalletContext';
-import { BrowserProvider, parseUnits } from 'ethers';
+import { BrowserProvider, Contract, parseUnits } from 'ethers';
 import { toast } from 'sonner';
 
 type Method = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
@@ -161,7 +161,10 @@ export default function ApiTester() {
             setLoading(false);
         }
     };
-
+    const USDC_TOKEN_ADDRESS = '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582';
+    const ERC20_ABI = [
+        "function transfer(address to, uint256 amount) public returns (bool)"
+    ];
     const handlePayment = async () => {
         if (!paymentRequired || !address) return;
         setPaying(true);
@@ -172,21 +175,16 @@ export default function ApiTester() {
             const provider = new BrowserProvider(window.ethereum);
             const signer = await provider.getSigner();
 
-            // Send Transaction
-            // Note: Using explicit high gas limit (500k) to prevent "Internal JSON-RPC error" 
-            // which often happens on Amoy testnet or with complex contract interactions.
-            const txt = await signer.sendTransaction({
-                to: paymentRequired.receiver,
-                value: 0,
-                gasLimit: 500000
-            });
+            //loading the usdc contract
+            const usdcContract = new Contract(USDC_TOKEN_ADDRESS, ERC20_ABI, signer);
 
-            await txt.wait();
+            const amount = parseUnits(paymentRequired.amount.toString(), 6);
+            const tx = await usdcContract.transfer(paymentRequired.receiver, amount);
+            await tx.wait();
 
-            // Create Proof
             const proof = {
                 payer: address,
-                txHash: txt.hash,
+                txHash: tx.hash,
                 amount: paymentRequired.amount,
                 currency: paymentRequired.currency
             };
@@ -194,9 +192,6 @@ export default function ApiTester() {
             const proofHeader = btoa(JSON.stringify(proof));
             setActivePaymentToken(proofHeader);
             setPaymentRequired(null);
-
-            // Auto Retry
-            // Pass the fresh token directly to handleSend to avoid stale state issues
             toast.success("Payment confirmed! Retrying request...");
             setTimeout(() => handleSend(true, proofHeader), 1000);
 
@@ -223,7 +218,7 @@ export default function ApiTester() {
             {/* Quick Start Examples */}
             <div className="bg-[#1A1B23] border border-white/10 rounded-xl p-4">
                 <h3 className="text-gray-400 text-xs font-medium mb-3 uppercase tracking-wider flex items-center gap-2">
-                    <Play size={14} /> Quick Start Endpoints
+                    <Play size={14} /> Demo Endpoints
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Free Endpoint */}
