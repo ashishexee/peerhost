@@ -127,7 +127,8 @@ export default async function router(req, reply) {
                             // Log ALL keys in the object
                             req.log.info(`[x402 DEBUG] Available keys: ${Object.keys(paymentData).join(', ')}`);
 
-                            payerWallet = paymentData.payer
+                            payerWallet = paymentData?.payload?.authorization?.from
+                                || paymentData.payer
                                 || paymentData.from
                                 || paymentData.buyer
                                 || paymentData.wallet
