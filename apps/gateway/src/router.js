@@ -104,19 +104,44 @@ export default async function router(req, reply) {
             // Fire-and-forget (don't block execution)
             (async () => {
                 try {
-                    const payerHeader = req.headers['x-payment'];
-                    if (!payerHeader) {
-                        return reply.status(403).send({
-                            error: "Invalid Payment Proof"
-                        });
+                    const paymentHeader = req.headers['x-payment'];
+
+                    // Decode payment data to extract payer
+                    let payerWallet = '0x0000000000000000000000000000000000000000';
+                    try {
+                        // First, log if it looks like a JWT (has dots)
+                        if (paymentHeader.includes('.')) {
+                            req.log.info(`[x402 DEBUG] Payment header looks like JWT format`);
+                            // Try to decode JWT payload (middle part)
+                            const parts = paymentHeader.split('.');
+                            if (parts.length === 3) {
+                                const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
+                                req.log.info(`[x402 DEBUG] JWT Payload: ${JSON.stringify(payload, null, 2)}`);
+                                payerWallet = payload.payer || payload.from || payload.sub || payload.address || '0x0000000000000000000000000000000000000000';
+                            }
+                        } else {
+                            // Standard base64 JSON
+                            const paymentData = JSON.parse(Buffer.from(paymentHeader, 'base64').toString());
+                            req.log.info(`[x402 DEBUG] Full decoded object: ${JSON.stringify(paymentData, null, 2)}`);
+
+                            // Log ALL keys in the object
+                            req.log.info(`[x402 DEBUG] Available keys: ${Object.keys(paymentData).join(', ')}`);
+
+                            payerWallet = paymentData.payer
+                                || paymentData.from
+                                || paymentData.buyer
+                                || paymentData.wallet
+                                || paymentData.address
+                                || '0x0000000000000000000000000000000000000000';
+                        }
+
+                        req.log.info(`[x402 DEBUG] Final extracted wallet: ${payerWallet}`);
+                    } catch (decodeErr) {
+                        req.log.error(`[x402 DEBUG] Decode error: ${decodeErr.message}`);
+                        req.log.error(`[x402 DEBUG] Payment header type: ${typeof paymentHeader}`);
+                        req.log.error(`[x402 DEBUG] Payment header first 100 chars: ${paymentHeader.substring(0, 100)}`);
                     }
-                    const paymentData = JSON.parse(Buffer.from(payerHeader, 'base64').toString());
-                    const payerWallet = paymentData.payer
-                        || paymentData.from
-                        || paymentData.buyer
-                        || paymentData.wallet
-                        || paymentData.address
-                        || '0x0000000000000000000000000000000000000000';
+
                     req.log.info(`[x402] Logging transaction... Payer: ${payerWallet}, Amount: ${price}`);
 
                     const { error: insertError } = await supabase.from('transactions').insert({
