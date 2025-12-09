@@ -397,9 +397,9 @@ export default function ApiTester() {
                         <div className="col-span-2 md:col-span-1">
                             <h4 className="text-gray-500 text-xs uppercase mb-2">Body</h4>
                             <pre className="bg-black/30 rounded-lg p-3 text-xs text-blue-300 overflow-x-auto whitespace-pre-wrap max-h-96 overflow-y-auto">
-                                typeof response.data === 'object'
-                                ? JSON.stringify(response.data, null, 2)
-                                : String(response.data)
+                                {typeof response.data === 'object'
+                                    ? JSON.stringify(response.data, null, 2)
+                                    : String(response.data)}
                             </pre>
                         </div>
                         <div className="col-span-2 md:col-span-1">
