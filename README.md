@@ -10,9 +10,17 @@ While PeerHost is the **native execution layer for the Agentic Economy**, its op
 **Build Unstoppable Backends. Monetize Every Request.**
 
 ---
+<p align="center">
+  <img src="assets/userflow-peerhost.svg" width="100%" alt="PeerHost User Flow">
+  <br><b>User Flow</b>
+</p>
+<br>
+<p align="center">
+  <img src="assets/architecture-peerhost.svg" width="100%" alt="PeerHost Architecture">
+  <br><b>Architecture</b>
+</p>
 
 ## Core Principles
-
 ### 1. Universal Monetization (Agents + Humans)
 
 PeerHost treats every function call as a potential transaction.
@@ -117,7 +125,7 @@ This creates a **self-incentivizing compute network**.
     </td>
     <td width="50%" align="center">
       <img src="assets/screenshots/cursor.png" width="100%" alt="AI Integration">
-      <br><b>AI Integration</b>
+      <br><b>Agentic AI Integration</b>
     </td>
   </tr>
 </table>
