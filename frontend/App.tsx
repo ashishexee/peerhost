@@ -15,53 +15,55 @@ import LearnMore from './components/LearnMore';
 import Docs from './components/Docs';
 import ExecutionFlow from './components/ExecutionFlow';
 import { Earnings } from './components/Earnings';
+import ApiTester from './components/ApiTester';
 import { Toaster } from 'sonner';
 
 function App() {
-  const { isConnected } = useWallet();
+    const { isConnected } = useWallet();
 
-  return (
-    <Router>
-        <Toaster position="top-center" theme="dark" />
-        <Routes>
-            <Route path="/" element={
-                 <div className="min-h-screen bg-black text-white selection:bg-[#0070f3] selection:text-white pb-20">
-                     <Navbar />
-                     <main>
-                        <Hero />
-                        <Architecture />
-                        <ExecutionFlow />
-                        <Features />
-                     </main>
-                 </div>
-            } />
+    return (
+        <Router>
+            <Toaster position="top-center" theme="dark" />
+            <Routes>
+                <Route path="/" element={
+                    <div className="min-h-screen bg-black text-white selection:bg-[#0070f3] selection:text-white pb-20">
+                        <Navbar />
+                        <main>
+                            <Hero />
+                            <Architecture />
+                            <ExecutionFlow />
+                            <Features />
+                        </main>
+                    </div>
+                } />
 
-            <Route path="/workers" element={
-                 <div className="min-h-screen bg-black text-white selection:bg-[#0070f3] selection:text-white pb-20">
-                     <Navbar />
-                     <WorkerRegistration />
-                 </div>
-            } />
+                <Route path="/workers" element={
+                    <div className="min-h-screen bg-black text-white selection:bg-[#0070f3] selection:text-white pb-20">
+                        <Navbar />
+                        <WorkerRegistration />
+                    </div>
+                } />
 
-            <Route path="/learn-more" element={<LearnMore />} />
-            
-            <Route path="/docs" element={<Docs />} />
+                <Route path="/learn-more" element={<LearnMore />} />
 
-            {/* Auth Callback - Unprotected */}
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            {/* Protected Dashboard Routes */}
-            <Route path="/deploy" element={
-                isConnected ? <DashboardLayout /> : <Navigate to="/" replace />
-            }>
-                <Route index element={<DashboardHome />} />
-                <Route path="projects" element={<Projects />} />
-                <Route path="earnings" element={<Earnings />} />
-                <Route path="new" element={<NewDeployment />} />
-                <Route path="*" element={<Navigate to="/deploy" replace />} />
-            </Route>
-        </Routes>
-    </Router>
-  );
+                <Route path="/docs" element={<Docs />} />
+
+                {/* Auth Callback - Unprotected */}
+                <Route path="/auth/callback" element={<AuthCallback />} />
+                {/* Protected Dashboard Routes */}
+                <Route path="/deploy" element={
+                    isConnected ? <DashboardLayout /> : <Navigate to="/" replace />
+                }>
+                    <Route index element={<DashboardHome />} />
+                    <Route path="projects" element={<Projects />} />
+                    <Route path="earnings" element={<Earnings />} />
+                    <Route path="test-api" element={<ApiTester />} />
+                    <Route path="new" element={<NewDeployment />} />
+                    <Route path="*" element={<Navigate to="/deploy" replace />} />
+                </Route>
+            </Routes>
+        </Router>
+    );
 }
 
 export default App;

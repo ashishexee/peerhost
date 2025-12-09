@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { LayoutGrid, Box, Settings, CreditCard, Users, FolderOpen } from 'lucide-react';
+import { LayoutGrid, Box, Settings, CreditCard, Users, FolderOpen, FlaskConical } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function Sidebar() {
@@ -10,6 +10,7 @@ export default function Sidebar() {
   const navItems = [
     { label: 'Overview', icon: LayoutGrid, path: '/deploy' },
     { label: 'Projects', icon: FolderOpen, path: '/deploy/projects' },
+    { label: 'Use API', icon: FlaskConical, path: '/deploy/test-api' },
     { label: 'Earnings', icon: CreditCard, path: '/deploy/earnings' },
     { label: 'Settings', icon: Settings, path: '/deploy/settings' },
   ];
@@ -24,21 +25,20 @@ export default function Sidebar() {
       {/* Navigation */}
       <div className="flex-1 py-6 px-3 space-y-1">
         {navItems.map((item) => {
-           const isActive = location.pathname === item.path;
-           return (
+          const isActive = location.pathname === item.path;
+          return (
             <button
-                key={item.label}
-                onClick={() => navigate(item.path)}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive 
-                    ? 'bg-white/10 text-white' 
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+              key={item.label}
+              onClick={() => navigate(item.path)}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive
+                ? 'bg-white/10 text-white'
+                : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }`}
             >
-                <item.icon className="w-4 h-4" />
-                {item.label}
+              <item.icon className="w-4 h-4" />
+              {item.label}
             </button>
-           );
+          );
         })}
       </div>
 
