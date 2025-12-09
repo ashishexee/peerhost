@@ -104,7 +104,14 @@ export default async function router(req, reply) {
             // Fire-and-forget (don't block execution)
             (async () => {
                 try {
-                    const payerWallet = req.headers['x-wallet'] || '0x0000000000000000000000000000000000000000';
+                    const payerHeader = req.headers['x-payment'];
+                    if(!payerHeader){
+                        return reply.status(403).send({
+                            error: "Invalid Payment Proof"
+                        });
+                    }
+                    const paymentData = JSON.parse(Buffer.from(payerHeader,'base64').toString());
+                    const payerWallet = paymentData.payer || '0x0000000000000000000000000000000000000000';
                     req.log.info(`[x402] Logging transaction... Payer: ${payerWallet}, Amount: ${price}`);
 
                     const { error: insertError } = await supabase.from('transactions').insert({
