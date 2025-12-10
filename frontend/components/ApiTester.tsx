@@ -243,6 +243,15 @@ export default function ApiTester() {
                 API Tester
             </h1>
 
+            {/* Info Note */}
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 flex gap-3 items-start">
+                <AlertCircle className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
+                <div className="text-sm text-blue-200 space-y-1">
+                    <p><strong>Note:</strong> Response times may vary. Please be patient while the decentralized network processes your request(working on optimization).</p>
+                    <p className="text-blue-300/80">If a payment transaction fails, the system may prompt for a retry. Retrying is safe and ensures your request is processed.</p>
+                </div>
+            </div>
+
             {/* Quick Start Examples */}
             <div className="bg-[#1A1B23] border border-white/10 rounded-xl p-4">
                 <h3 className="text-gray-400 text-xs font-medium mb-3 uppercase tracking-wider flex items-center gap-2">
