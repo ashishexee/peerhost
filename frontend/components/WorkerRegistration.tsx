@@ -46,7 +46,7 @@ export default function WorkerRegistration() {
   return (
     <div className="min-h-screen bg-black pt-24 pb-20 px-4">
       <div className="max-w-4xl mx-auto">
-        
+
         {/* Header */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full text-blue-400 text-xs font-mono mb-6">
@@ -55,69 +55,124 @@ export default function WorkerRegistration() {
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">Run a Worker Node</h1>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Earn rewards by contributing compute power to the PeerHost network. 
+            Earn rewards by contributing compute power to the PeerHost network.
             Run serverless functions in a secure sandbox environment.
           </p>
         </div>
 
         {/* Benefits Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
-            <div className="bg-white/5 border border-white/10 p-6 rounded-xl">
-                <Cpu className="w-8 h-8 text-purple-400 mb-4" />
-                <h3 className="text-lg font-bold text-white mb-2">Monetize Compute</h3>
-                <p className="text-sm text-gray-400">Turn your idle CPU cycles into earnings. Workers get paid for every verified execution.</p>
-            </div>
-            <div className="bg-white/5 border border-white/10 p-6 rounded-xl">
-                <Shield className="w-8 h-8 text-blue-400 mb-4" />
-                <h3 className="text-lg font-bold text-white mb-2">Secure Sandbox</h3>
-                <p className="text-sm text-gray-400">Code runs in isolated VM2 sandboxes. Your host machine stays protected.</p>
-            </div>
-            <div className="bg-white/5 border border-white/10 p-6 rounded-xl">
-                <Terminal className="w-8 h-8 text-green-400 mb-4" />
-                <h3 className="text-lg font-bold text-white mb-2">Easy Setup</h3>
-                <p className="text-sm text-gray-400">Simple CLI setup. Run on any machine with Node.js and an internet connection.</p>
-            </div>
+          <div className="bg-white/5 border border-white/10 p-6 rounded-xl">
+            <Cpu className="w-8 h-8 text-purple-400 mb-4" />
+            <h3 className="text-lg font-bold text-white mb-2">Monetize Compute</h3>
+            <p className="text-sm text-gray-400">Turn your idle CPU cycles into earnings. Workers get paid for every verified execution.</p>
+          </div>
+          <div className="bg-white/5 border border-white/10 p-6 rounded-xl">
+            <Shield className="w-8 h-8 text-blue-400 mb-4" />
+            <h3 className="text-lg font-bold text-white mb-2">Secure Sandbox</h3>
+            <p className="text-sm text-gray-400">Code runs in isolated VM2 sandboxes. Your host machine stays protected.</p>
+          </div>
+          <div className="bg-white/5 border border-white/10 p-6 rounded-xl">
+            <Terminal className="w-8 h-8 text-green-400 mb-4" />
+            <h3 className="text-lg font-bold text-white mb-2">Easy Setup</h3>
+            <p className="text-sm text-gray-400">Simple CLI setup. Run on any machine with Node.js and an internet connection.</p>
+          </div>
         </div>
 
         {/* Setup Steps */}
         <div className="bg-white/5 border border-white/10 rounded-2xl p-8 md:p-12">
-            <h2 className="text-2xl font-bold text-white mb-8 border-b border-white/10 pb-4">Setup Instructions</h2>
-            
-            <Step number={1} title="Prerequisites">
-                <p>Ensure you have the following installed on your machine:</p>
-                <ul className="list-disc list-inside space-y-2 ml-2">
-                    <li>Node.js v16+</li>
-                    <li>Git</li>
-                    <li>An EVM Wallet (Private Key required for signing results)</li>
-                </ul>
-            </Step>
+          <h2 className="text-2xl font-bold text-white mb-8 border-b border-white/10 pb-4">Setup Instructions</h2>
 
-            <Step number={2} title="Clone the Worker Repository">
-                <p>Clone the official peerhost repository to get the worker software.</p>
-                <CodeBlock code="git clone https://github.com/ashishexee/peerhost.git
+          <Step number={1} title="Prerequisites">
+            <p>Ensure you have the following installed on your machine:</p>
+            <ul className="list-disc list-inside space-y-2 ml-2">
+              <li>Node.js v16+</li>
+              <li>Git</li>
+              <li>An EVM Wallet (Private Key required for signing results)</li>
+            </ul>
+          </Step>
+
+          <Step number={2} title="Clone the Worker Repository">
+            <p>Clone the official peerhost repository to get the worker software.</p>
+            <CodeBlock code="git clone https://github.com/ashishexee/peerhost.git
 cd peerhost/apps/worker
 npm install" />
-            </Step>
+          </Step>
 
-            <Step number={3} title="Configure Environment">
-                <p>Create a <code className="text-blue-300">.env</code> file in the <code className="text-blue-300">/peerhost/</code> that is the root directory.</p>
-                <CodeBlock code="GATEWAY_URL=https://gateway.peerhost.net
+          <Step number={3} title="Configure Environment">
+            <p>Create a <code className="text-blue-300">.env</code> file in the <code className="text-blue-300">/peerhost/</code> that is the root directory.</p>
+            <CodeBlock code="GATEWAY_URL=https://gateway.peerhost.net
 RPC_URL=https://polygon-rpc.com
 PRIVATE_KEY=your_wallet_private_key
 IPFS_GATEWAY=https://ipfs.io/ipfs/" />
-                <div className="bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-lg text-sm text-yellow-200 mt-4">
-                    ⚠️ <strong>Security Note:</strong> Your private key is used ONLY to sign execution results on-chain. Store it securely and never share it.
-                </div>
-            </Step>
+            <div className="bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-lg text-sm text-yellow-200 mt-4">
+              ⚠️ <strong>Security Note:</strong> Your private key is used ONLY to sign execution results on-chain. Store it securely and never share it.
+            </div>
+          </Step>
 
-            <Step number={4} title="Start the Worker">
-                <p>Launch your node. It will automatically connect to the network and start listening for jobs.</p>
-                <CodeBlock code="npm start" />
-                <p className="text-sm text-gray-500 italic">You should see "Worker Listening for Events..." in your terminal.</p>
-            </Step>
+          <Step number={4} title="Start the Worker">
+            <p>Launch your node. It will automatically connect to the network and start listening for jobs.</p>
+            <CodeBlock code="npm start" />
+            <p className="text-sm text-gray-500 italic">You should see "Worker Listening for Events..." in your terminal.</p>
+          </Step>
 
         </div>
 
+        {/* Android Guide */}
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-8 md:p-12 mt-8">
+          <h2 className="text-2xl font-bold text-white mb-8 border-b border-white/10 pb-4">Run on Android</h2>
+
+          <p className="text-gray-400 mb-8">
+            You can also run PeerHost's Workers Node on Android devices using Termux.
+            This allows you to contribute compute power directly from your mobile phone.
+          </p>
+
+          <Step number={1} title="Install Termux">
+            <p>Download and install <strong>Termux</strong> from F-Droid (recommended over Play Store).</p>
+            <p className="text-sm text-gray-500 mt-2">Termux provides a Linux-like environment on your Android device.</p>
+          </Step>
+
+          <Step number={2} title="Install Dependencies">
+            <p>Update packages and install Node.js and Git.</p>
+            <CodeBlock code="pkg update
+pkg upgrade
+pkg install git nodejs" />
+          </Step>
+
+          <Step number={3} title="Clone Repository">
+            <p>Clone the worker repository.</p>
+            <CodeBlock code="git clone https://github.com/ashishexee/peerhost.git
+cd peerhost/apps/worker" />
+          </Step>
+
+          <Step number={4} title="Setup Environment">
+            <p>Create your .env file.</p>
+            <CodeBlock code="nano .env" />
+            <p className="mt-2 mb-2">Paste your configuration:</p>
+            <CodeBlock code="GATEWAY_URL=https://gateway.peerhost.net
+RPC_URL=https://polygon-rpc.com
+PRIVATE_KEY=your_wallet_private_key
+IPFS_GATEWAY=https://ipfs.io/ipfs/" />
+            <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-lg text-sm text-blue-200 mt-4">
+              <strong>Nano Tips:</strong><br />
+              Save: <code className="bg-black/30 px-1 rounded">CTRL + O</code> then <code className="bg-black/30 px-1 rounded">ENTER</code><br />
+              Exit: <code className="bg-black/30 px-1 rounded">CTRL + X</code>
+            </div>
+          </Step>
+
+          <Step number={5} title="Run Worker">
+            <p>Install dependencies and start the node.</p>
+            <CodeBlock code="npm install
+node src/index.js" />
+            <div className="bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-lg text-sm text-yellow-200 mt-4">
+              ⚠️ <strong>Limitations:</strong><br />
+              • Process stops if Termux is closed (use Termux:Boot for background).<br />
+              • Heavy native modules might fail to build.<br />
+              • Battery drain will be higher than usual.
+            </div>
+          </Step>
+
+        </div>
       </div>
     </div>
   );

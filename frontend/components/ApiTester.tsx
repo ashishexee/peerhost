@@ -166,7 +166,6 @@ export default function ApiTester() {
         "function transfer(address to, uint256 amount) public returns (bool)",
         "function balanceOf(address account) view returns (uint256)"
     ];
-    const FALLBACK_RPC_URL = "https://polygon-amoy.g.alchemy.com/v2/pBRHwIu8bYhPcgeittRy4";
     const handlePayment = async () => {
         if (!paymentRequired || !address) return;
         setPaying(true);
