@@ -19,6 +19,11 @@ While PeerHost is the **native execution layer for the Agentic Economy**, its op
   <img src="assets/architecture-peerhost.svg" width="100%" alt="PeerHost Architecture">
   <br><b>Architecture</b>
 </p>
+<br>
+<p align="center">
+  <img src="assets/future-plans.svg" width="100%" alt="PeerHost Future Plans">
+  <br><b>Future Plans</b>
+</p>
 
 ## Core Principles
 ### 1. Universal Monetization (Agents + Humans)

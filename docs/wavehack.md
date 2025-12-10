@@ -9,6 +9,7 @@
 
 **Live Deployment:** [https://peerhost.vercel.app/](https://peerhost.vercel.app/)  
 **GitHub Repo:** [https://github.com/ashishexee/peerhost](https://github.com/ashishexee/peerhost)  
+**Demo Video:** [https://youtu.be/dwaZznk7Yas](https://youtu.be/dwaZznk7Yas) 
 **Documentation:** [https://peerhost.vercel.app/docs](https://peerhost.vercel.app/docs)  
 **Smart Contract:** [https://amoy.polygonscan.com/address/0x087a2d886fc8eadf5d03f6ea5acd0b1430c13fb8](https://amoy.polygonscan.com/address/0x087a2d886fc8eadf5d03f6ea5acd0b1430c13fb8)
 
