@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Play, Plus, Trash2, Loader2, AlertCircle, CheckCircle2, DollarSign, Copy, Check, Contact } from 'lucide-react';
 import { useWallet } from '../context/WalletContext';
-import { BrowserProvider, Contract, parseUnits } from 'ethers';
+import { BrowserProvider, Contract, parseUnits, formatUnits } from 'ethers';
 import { toast } from 'sonner';
 
 type Method = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
@@ -163,49 +163,78 @@ export default function ApiTester() {
     };
     const USDC_TOKEN_ADDRESS = '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582';
     const ERC20_ABI = [
-        "function transfer(address to, uint256 amount) public returns (bool)"
+        "function transfer(address to, uint256 amount) public returns (bool)",
+        "function balanceOf(address account) view returns (uint256)"
     ];
+    const FALLBACK_RPC_URL = "https://polygon-amoy.g.alchemy.com/v2/pBRHwIu8bYhPcgeittRy4";
     const handlePayment = async () => {
         if (!paymentRequired || !address) return;
         setPaying(true);
 
-        try {
-            if (!window.ethereum) throw new Error("No wallet found");
+        let attempt = 0;
+        let maxAttempt = 3;
 
-            const provider = new BrowserProvider(window.ethereum);
-            const signer = await provider.getSigner();
+        while (attempt <= maxAttempt) {
+            try {
+                if (!window.ethereum) throw new Error("No wallet found");
 
-            //loading the usdc contract
-            const usdcContract = new Contract(USDC_TOKEN_ADDRESS, ERC20_ABI, signer);
+                const provider = new BrowserProvider(window.ethereum);
+                const signer = await provider.getSigner();
+                const network = await provider.getNetwork();
 
-            const amount = parseUnits(paymentRequired.amount.toString(), 6);
-            const tx = await usdcContract.transfer(paymentRequired.receiver, amount);
-            await tx.wait();
+                if (Number(network.chainId) != 80002) {
+                    toast.error("Please connect to Amoy Network");
+                    return;
+                }
 
-            const proof = {
-                payer: address,
-                txHash: tx.hash,
-                amount: paymentRequired.amount,
-                currency: paymentRequired.currency
-            };
+                // Check Native MATIC Balance for Gas
+                const nativeBalance = await provider.getBalance(address);
+                if (nativeBalance === 0n) {
+                    toast.error("You have 0 MATIC. You need MATIC to pay for transaction gas fees.");
+                    return;
+                }
 
-            const proofHeader = btoa(JSON.stringify(proof));
-            setActivePaymentToken(proofHeader);
-            setPaymentRequired(null);
-            toast.success("Payment confirmed! Retrying request...");
-            setTimeout(() => handleSend(true, proofHeader), 1000);
+                const usdcContract = new Contract(USDC_TOKEN_ADDRESS, ERC20_ABI, signer);
 
-        } catch (err: any) {
-            console.error(err);
-            if (err.code === "INSUFFICIENT_FUNDS" || err.message?.includes("insufficient funds")) {
-                toast.error("Insufficient MATIC for gas fees on Polygon Amoy.");
-            } else if (err.code === 4001 || err.message?.includes("user rejected")) {
-                toast.error("Transaction rejected by user.");
-            } else {
-                toast.error("Payment failed: " + (err.reason || err.message || "Unknown Error"));
+                const amount = parseUnits(paymentRequired.amount.toString(), 6);
+
+                // Check Balance
+                const balance = await usdcContract.balanceOf(address);
+                if (balance < amount) {
+                    toast.error(`Insufficient USDC. You have ${formatUnits(balance, 6)} USDC, but need ${paymentRequired.amount} USDC.`);
+                    return;
+                }
+
+                const tx = await usdcContract.transfer(paymentRequired.receiver, amount, { gasLimit: 200000 });
+                await tx.wait();
+
+                const proof = {
+                    payer: address,
+                    txHash: tx.hash,
+                    amount: paymentRequired.amount,
+                    currency: paymentRequired.currency
+                };
+
+                const proofHeader = btoa(JSON.stringify(proof));
+                setActivePaymentToken(proofHeader);
+                setPaymentRequired(null);
+                toast.success("Payment confirmed! Retrying request...");
+                setTimeout(() => handleSend(true, proofHeader), 1000);
+
+                setPaying(false);
+                break;
+
+            } catch (err: any) {
+                console.error(err);
+                attempt++;
+                toast.error("Payment failed. Retrying...");
+                if (attempt > maxAttempt) {
+                    toast.error("Payment failed after multiple attempts.");
+                    return;
+                }
+            } finally {
+                setPaying(false);
             }
-        } finally {
-            setPaying(false);
         }
     };
 
