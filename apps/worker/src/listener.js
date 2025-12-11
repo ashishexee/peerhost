@@ -15,11 +15,17 @@ export async function startListener() {
         throw new Error("Missing RPC_URL or EXECUTION_CONTRACT_ADDRESS");
     }
 
-    console.log(`[Listener] Connecting to ${RPC_URL}...`);
-    // Use WebSocketProvider if URL starts with ws/wss, else JsonRpcProvider (polling)
-    const provider = RPC_URL.startsWith("http")
-        ? new ethers.JsonRpcProvider(RPC_URL)
-        : new ethers.WebSocketProvider(RPC_URL);
+    let provider;
+    if (RPC_URL.startsWith('ws')) {
+        provider = new ethers.WebSocketProvider(RPC_URL);
+    }
+    else {
+        const wsURL = RPC_URL
+            .replace("https://", "wss://")
+            .replace("http://", "ws://");
+        console.log(`[Listener] Connecting to ${wsURL}...`);
+        provider = new ethers.WebSocketProvider(wsURL);
+    }
 
     const contract = new ethers.Contract(CONTRACT_ADDRESS, ExecutionABI, provider);
 

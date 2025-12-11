@@ -24,7 +24,12 @@ export async function sendResult(requestId, result) {
     // Contract expects Bytes32 (Hex)
     try {
         console.log(`[Result] Submitting proof on-chain...`);
-        const provider = new ethers.JsonRpcProvider(RPC_URL);
+        let provider;
+        if (RPC_URL.startsWith("ws")) {
+            provider = new ethers.WebSocketProvider(RPC_URL);
+        } else {
+            provider = new ethers.JsonRpcProvider(RPC_URL);
+        }
         const wallet = new ethers.Wallet(WORKER_PRIVATE_KEY, provider);
         const contract = new ethers.Contract(CONTRACT_ADDRESS, ExecutionABI, wallet);
 
