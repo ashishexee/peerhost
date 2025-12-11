@@ -5,3 +5,4 @@
 /packages/contracts/cache
 /packages/contracts/out
 /apps/mcp-client/node_modules
+/testing-nodejs/node_modules

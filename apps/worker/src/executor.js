@@ -8,6 +8,20 @@ export async function executeFunction(code, args, envVars = {}) {
             error: (...args) => console.error("[Func Err]", ...args)
         },
         fetch: global.fetch,
+        URL: global.URL,
+        URLSearchParams: global.URLSearchParams,
+        Buffer: global.Buffer,
+        TextEncoder: global.TextEncoder,
+        TextDecoder: global.TextDecoder,
+        setTimeout: global.setTimeout,
+        clearTimeout: global.clearTimeout,
+        setInterval: global.setInterval,
+        clearInterval: global.clearInterval,
+        process: {
+            env: envVars,
+            nextTick: global.process.nextTick,
+            cwd: () => "/"
+        },
         args,
         env: envVars
     };
