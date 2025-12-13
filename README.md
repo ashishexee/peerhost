@@ -9,6 +9,15 @@ While PeerHost is the **native execution layer for the Agentic Economy**, its op
 
 **Build Unstoppable Backends. Monetize Every Request.**
 
+> **Protocol Economics & Sustainability**
+>
+> Currently, PeerHost is **subsidized**—users can deploy and execute serverless functions for free, with the `ExecutionCoordinator` treasury (funded by the creator) covering worker fees. Also the payment from the paid endpoints gets directly into the `Owners` wallet.
+>
+> **Future Roadmap**: We will transition to a fully self-sustaining system:
+> *   **Free Tier**: Users will continue to enjoy a free execution quota.
+> *   **Treasury Funding**: To exceed free limits, users will deposit funds directly into the `ExecutionCoordinator.sol` treasury.
+> *   **No Middlemen**: Smart contracts handle all coordination. You fund the treasury, and the treasury pays the workers directly.
+
 ---
 <p align="center">
   <img src="assets/userflow-peerhost.svg" width="100%" alt="PeerHost User Flow">
