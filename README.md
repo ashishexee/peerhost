@@ -5,6 +5,8 @@
 1.  **Unstoppable Execution**: A distributed, censorship-resistant worker network coordinated on **Polygon**.
 2.  **Native Monetization**: The first platform where developers can **price their API endpoints** using the **x402 Protocol**.
 
+Workers maintain persistent **WebSocket connections** to Polygon RPC endpoints and listen for `ExecutionRequest` events emitted by the **ExecutionCoordinator** contract. Upon an event, all workers execute the serverless function inside **isolated sandboxes** and submit results on-chain along with proofs. The contract **rewards the fastest valid worker**, enabling a trust-minimized, performance-driven execution model.
+
 While PeerHost is the **native execution layer for the Agentic Economy**, its open monetization standard is **universally compatible**. Whether accessed by an AI Agent, a dApp, or a human developer, **PeerHost gets you paid**.
 
 **Build Unstoppable Backends. Monetize Every Request.**
