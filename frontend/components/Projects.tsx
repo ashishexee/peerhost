@@ -125,14 +125,6 @@ export default function Projects() {
                                     <Copy size={14} />
                                     Copy Project URL
                                 </button>
-                                <a
-                                    href={`https://peerhost-jl8u.vercel.app/run/${group.wallet}/${group.name}`} // Dev URL
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="px-3 flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"
-                                >
-                                    <ExternalLink size={16} />
-                                </a>
                             </div>
 
                         </div>
