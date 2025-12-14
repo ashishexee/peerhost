@@ -16,6 +16,7 @@ import Docs from './components/Docs';
 import ExecutionFlow from './components/ExecutionFlow';
 import { Earnings } from './components/Earnings';
 import ApiTester from './components/ApiTester';
+import FuturePlans from './components/FuturePlans';
 import { Toaster } from 'sonner';
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
         <Router>
             <Toaster position="top-center" theme="dark" />
             <Routes>
+                <Route path="/future-plans" element={<FuturePlans />} />
                 <Route path="/" element={
                     <div className="min-h-screen bg-black text-white selection:bg-[#0070f3] selection:text-white pb-20">
                         <Navbar />

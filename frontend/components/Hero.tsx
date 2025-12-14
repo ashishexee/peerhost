@@ -108,6 +108,14 @@ const Hero = () => {
             </svg>
             Start Building
           </button>
+
+          <button
+            onClick={() => navigate('/future-plans')}
+            className="h-12 px-8 rounded-full bg-transparent border border-white/20 text-white font-medium text-base hover:bg-white/10 transition-all backdrop-blur-sm"
+          >
+            Future Plans
+          </button>
+
           <button
             onClick={() => navigate('/workers')}
             className="h-12 px-8 rounded-full bg-accents-1 border border-accents-2 text-white font-medium text-base hover:bg-accents-2 transition-all"
