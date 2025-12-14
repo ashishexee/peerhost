@@ -9,6 +9,8 @@ Workers maintain persistent **WebSocket connections** to Polygon RPC endpoints a
 
 While PeerHost is the **native execution layer for the Agentic Economy**, its open monetization standard is **universally compatible**. Whether accessed by an AI Agent, a dApp, or a human developer, **PeerHost gets you paid**.
 
+[![PeerHost Demo](http://img.youtube.com/vi/dwaZznk7Yas/0.jpg)](https://www.youtube.com/watch?v=dwaZznk7Yas)
+
 **Build Unstoppable Backends. Monetize Every Request.**
 
 > **Protocol Economics & Sustainability**
