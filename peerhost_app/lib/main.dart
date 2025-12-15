@@ -1,11 +1,13 @@
-import 'dart:async';
-import 'package:peerhost_app/screens/worker_onboarding_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:peerhost_app/background_services.dart';
-import 'services/wallet_service.dart';
-import 'services/wallet_connect_service.dart';
+import 'package:peerhost_app/screens/funding_screen.dart';
+import 'package:peerhost_app/screens/login_screen.dart';
+import 'package:peerhost_app/screens/worker_list_screen.dart';
+import 'package:peerhost_app/screens/add_worker_screen.dart';
+import 'package:peerhost_app/services/wallet_connect_service.dart';
+import 'package:peerhost_app/services/wallet_service.dart';
+import 'package:logger/logger.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,8 +22,20 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'PeerHost Worker',
-      theme: ThemeData(primarySwatch: Colors.deepPurple, useMaterial3: true),
-      home: const WorkerOnboardingScreen(),
+      theme: ThemeData(
+        brightness: Brightness.dark,
+        primarySwatch: Colors.deepPurple,
+        useMaterial3: true,
+        scaffoldBackgroundColor: Colors.black,
+      ),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const LoginScreen(),
+        '/worker-list': (context) => const WorkerListScreen(),
+        '/add-worker': (context) => const AddWorkerScreen(),
+        '/funding': (context) => const FundingScreen(),
+        '/home': (context) => const ServiceControlScreen(),
+      },
       debugShowCheckedModeBanner: false,
     );
   }
@@ -34,67 +48,26 @@ class ServiceControlScreen extends StatefulWidget {
   State<ServiceControlScreen> createState() => _ServiceControlScreenState();
 }
 
-class _ServiceControlScreenState extends State<ServiceControlScreen>
-    with WidgetsBindingObserver {
+class _ServiceControlScreenState extends State<ServiceControlScreen> {
   String text = "Start Service";
   bool isRunning = false;
-  String? workerAddress = "Loading...";
 
-  final WalletService _walletService = WalletService();
   final WalletConnectService _wcService = WalletConnectService();
-
-  bool _isAuthorizedByOwner = false;
-  bool _initFailed = false; // New state to track initialization failure
+  final WalletService _walletService = WalletService();
+  String? _workerAddress;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
-
-    // Init async tasks
-    _initWalletConnect();
-    _loadWallet();
     _checkServiceStatus();
+    _loadWorker();
   }
 
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  // Initialize Reown AppKit via Service
-  Future<void> _initWalletConnect() async {
-    if (mounted) setState(() => _initFailed = false);
-
-    // Wait for frame to ensure context is safe
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final success = await _wcService.initialize(context);
-
-      if (mounted) {
-        if (!success) {
-          setState(() => _initFailed = true);
-        } else {
-          // Add listener to rebuild UI on state changes
-          // Add listener to rebuild UI on state changes
-          _wcService.modal.addListener(() {
-            if (mounted) setState(() {});
-          });
-          setState(() {}); // Initial update
-        }
-      }
-    });
-  }
-
-  Future<void> _loadWallet() async {
+  Future<void> _loadWorker() async {
     final key = await _walletService.getOrGenerateWorkerKey();
-    final auth = await _walletService.isAuthorized();
-    if (mounted) {
-      setState(() {
-        workerAddress = key.address.hex;
-        _isAuthorizedByOwner = auth;
-      });
-    }
+    setState(() {
+      _workerAddress = key.address.hex;
+    });
   }
 
   Future<void> _checkServiceStatus() async {
@@ -126,185 +99,92 @@ class _ServiceControlScreenState extends State<ServiceControlScreen>
     }
   }
 
-  void _openConnectModal() async {
-    await _wcService.openModal(context);
-  }
-
-  void _disconnectWallet() async {
+  void _disconnect() async {
     await _wcService.disconnect();
-    setState(() {
-      _isAuthorizedByOwner = false;
-    });
-  }
-
-  void _authorizeWorker() async {
-    if (workerAddress == null) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Requesting Authorization in Wallet...")),
-    );
-
-    try {
-      final txHash = await _wcService.authorizeWorker(workerAddress!);
-      Logger().i("Authorized! TX: $txHash");
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            "Authorization Successful! Pending Chain Confirmation.",
-          ),
-        ),
-      );
-
-      await _walletService.setAuthorized(true);
-      if (mounted) {
-        setState(() {
-          _isAuthorizedByOwner = true;
-        });
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Authorization Failed: $e")));
+    if (mounted) {
+      Navigator.of(context).pushReplacementNamed('/');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    bool isConnected = _wcService.isConnected;
+    // This is the "White Scaffold" requested by user,
+    // but sticking to dark theme for consistency unless forced.
+    // User said "make the main screen or the home screen a white scaffold for now we will come to it later"
+    // Okay, I will make it white.
 
     return Scaffold(
-      appBar: AppBar(title: const Text('PeerHost Worker Node')),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                isRunning ? Icons.check_circle : Icons.power_settings_new,
-                color: isRunning ? Colors.green : Colors.grey,
-                size: 100,
-              ),
-              const SizedBox(height: 20),
-              Text(
-                isRunning ? "Node is Active" : "Node is Stopped",
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 10),
-              Container(
-                padding: const EdgeInsets.all(16),
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Column(
-                  children: [
-                    const Text(
-                      "Worker Address (Session Key)",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 5),
-                    SelectableText(
-                      workerAddress ?? "Generating...",
-                      style: const TextStyle(
-                        fontFamily: 'Courier',
-                        fontSize: 12,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 5),
-                    const Text(
-                      "(This key must be authorized by your main wallet)",
-                      style: TextStyle(fontSize: 10, color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Wallet Connect Section
-              if (_initFailed)
-                Column(
-                  children: [
-                    const Text(
-                      "WalletConnect Init Failed",
-                      style: TextStyle(color: Colors.red),
-                    ),
-                    ElevatedButton(
-                      onPressed: _initWalletConnect,
-                      child: const Text("Retry"),
-                    ),
-                  ],
-                )
-              else if (!_wcService.isInitialized)
-                const Column(
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 8),
-                    Text("Initializing Wallet..."),
-                  ],
-                )
-              else if (!isConnected)
-                ElevatedButton.icon(
-                  onPressed: _openConnectModal,
-                  icon: const Icon(Icons.link),
-                  label: const Text("Connect MetaMask (Owner)"),
-                )
-              else
-                Column(
-                  children: [
-                    Chip(
-                      label: Text(
-                        "Connected: ${_wcService.connectedAddress != null ? '${_wcService.connectedAddress!.substring(0, 6)}...${_wcService.connectedAddress!.substring(_wcService.connectedAddress!.length - 4)}' : 'Unknown'}",
-                      ),
-                      avatar: const Icon(Icons.check, color: Colors.white),
-                      backgroundColor: Colors.green,
-                    ),
-                    const SizedBox(height: 10),
-                    ElevatedButton.icon(
-                      onPressed: _authorizeWorker,
-                      icon: const Icon(Icons.verified_user),
-                      label: const Text("Authorize Worker Key"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        foregroundColor: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextButton(
-                      onPressed: _disconnectWallet,
-                      child: const Text(
-                        "Disconnect Wallet",
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ),
-                  ],
-                ),
-
-              const SizedBox(height: 40),
-              ElevatedButton(
-                onPressed: _isAuthorizedByOwner ? _toggleService : null,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 40,
-                    vertical: 15,
-                  ),
-                  backgroundColor: isRunning ? Colors.redAccent : null,
-                  foregroundColor: isRunning ? Colors.white : null,
-                ),
-                child: Text(text),
-              ),
-              if (!_isAuthorizedByOwner)
-                const Padding(
-                  padding: EdgeInsets.only(top: 8.0),
-                  child: Text(
-                    "Authorize wallet to start node",
-                    style: TextStyle(color: Colors.red, fontSize: 12),
-                  ),
-                ),
-            ],
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text(
+          'PeerHost Worker Node',
+          style: TextStyle(color: Colors.black),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black),
+            onPressed: _disconnect,
           ),
+        ],
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Status Circle
+            Container(
+              width: 150,
+              height: 150,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isRunning ? Colors.green[100] : Colors.grey[100],
+                border: Border.all(
+                  color: isRunning ? Colors.green : Colors.grey,
+                  width: 3,
+                ),
+              ),
+              child: Icon(
+                isRunning ? Icons.check_rounded : Icons.power_settings_new,
+                size: 60,
+                color: isRunning ? Colors.green : Colors.grey,
+              ),
+            ),
+            const SizedBox(height: 30),
+
+            Text(
+              isRunning ? "Node is Active" : "Node is Stopped",
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              "Worker: ${_workerAddress != null ? '${_workerAddress!.substring(0, 6)}...${_workerAddress!.substring(_workerAddress!.length - 4)}' : 'Loading...'}",
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+
+            const SizedBox(height: 50),
+
+            ElevatedButton(
+              onPressed: _toggleService,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isRunning ? Colors.red : Colors.black,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 40,
+                  vertical: 16,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              child: Text(text),
+            ),
+          ],
         ),
       ),
     );

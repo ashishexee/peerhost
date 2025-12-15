@@ -157,4 +157,25 @@ class BlockchainService {
     }
     return bytes;
   }
+
+  /// Get Native Balance (Amoy)
+  Future<EtherAmount> getWorkerBalance(String address) async {
+    return await _client.getBalance(EthereumAddress.fromHex(address));
+  }
+
+  /// Get Workers for a User Request
+  Future<List<String>> getWorkersForUser(String userAddress) async {
+    if (_executionContract == null) await initialize();
+
+    final function = _executionContract!.function('getUserWorkers');
+    final result = await _client.call(
+      contract: _executionContract!,
+      function: function,
+      params: [EthereumAddress.fromHex(userAddress)],
+    );
+
+    // result[0] is List<EthereumAddress>
+    final List<dynamic> workers = result[0];
+    return workers.map((e) => (e as EthereumAddress).hex).toList();
+  }
 }
