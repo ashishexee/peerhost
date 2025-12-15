@@ -60,6 +60,24 @@ class BlockchainService {
     return _client.events(filter);
   }
 
+  /// Listen for decoded requests (User Friendly stream)
+  Stream<Map<String, dynamic>> listenForDecodedRequests() {
+    return listenForRequests().asyncMap((event) async {
+      final decoded = _executionContract!
+          .event('ExecutionRequested')
+          .decodeResults(event.topics ?? [], event.data ?? '');
+
+      // ABI: event ExecutionRequested(address indexed wallet, string project, string fn, string cid, uint256 requestId)
+      return {
+        'wallet': decoded[0].toString(),
+        'project': decoded[1],
+        'fn': decoded[2],
+        'cid': decoded[3],
+        'requestId': decoded[4].toString(),
+      };
+    });
+  }
+
   /// Fetch code from IPFS (via Gateway or direct)
   Future<String> fetchCode(String cid) async {
     final List<String> gateways = [

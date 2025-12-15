@@ -1,7 +1,6 @@
 > [!NOTE]
-> An early MVP of the Worker application has been pushed for reference.
-> It is **out of scope for Wave 4 judging** and included only to showcase planned
-> expansion in upcoming waves.
+> An early MVP of the Worker application is included in `/peerhost_app` as a preview of upcoming work,
+> demonstrating continued progress and showcasing planned scope for PeerHost.
 
 # PeerHost — The Universal Decentralized & Monetizable Serverless Network
 

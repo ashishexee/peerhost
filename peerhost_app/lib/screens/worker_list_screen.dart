@@ -4,6 +4,8 @@ import 'package:peerhost_app/services/wallet_connect_service.dart';
 import 'package:peerhost_app/services/wallet_service.dart';
 import 'package:peerhost_app/widgets/modern_button.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:web3dart/web3dart.dart';
 
 class WorkerListScreen extends StatefulWidget {
   const WorkerListScreen({super.key});
@@ -18,8 +20,9 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
   final _walletService = WalletService();
 
   List<String> _workers = [];
+  Map<String, String> _balances = {};
   bool _isLoading = true;
-  String? _localWorkerAddress;
+  String? _lastUsedWorker;
 
   @override
   void initState() {
@@ -37,20 +40,27 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
         return;
       }
 
+      final prefs = await SharedPreferences.getInstance();
+      _lastUsedWorker = prefs.getString('last_used_worker');
+
       // 1. Fetch registered workers from chain
       final workers = await _blockchainService.getWorkersForUser(userAddress);
 
-      // 2. Get local worker key if exists
-      // We don't generate if not exists here, just check if we have one
-      // But getOrGenerateWorkerKey actually generates if session doesn't exist?
-      // Let's check if there's a stored key first?
-      // The WalletService API generates on demand. That's fine.
-      final creds = await _walletService.getOrGenerateWorkerKey();
-      final localAddress = creds.address.hex.toLowerCase();
+      // Fetch balances
+      final Map<String, String> balances = {};
+      for (final worker in workers) {
+        try {
+          final balance = await _blockchainService.getWorkerBalance(worker);
+          balances[worker] =
+              "${balance.getValueInUnit(EtherUnit.ether).toStringAsFixed(4)} ETH";
+        } catch (e) {
+          balances[worker] = "Error";
+        }
+      }
 
       setState(() {
         _workers = workers.map((e) => e.toLowerCase()).toList();
-        _localWorkerAddress = localAddress;
+        _balances = balances.map((k, v) => MapEntry(k.toLowerCase(), v));
         _isLoading = false;
       });
     } catch (e) {
@@ -59,19 +69,112 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
     }
   }
 
-  void _useWorker(String workerAddress) {
-    if (workerAddress.toLowerCase() == _localWorkerAddress) {
-      Navigator.of(context).pushReplacementNamed('/funding');
+  Future<void> _useWorker(String workerAddress) async {
+    final hasKey = await _walletService.hasKey(workerAddress);
+
+    if (hasKey) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('last_used_worker', workerAddress);
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/funding');
+      }
     } else {
-      // Trying to use a worker that is NOT on this device
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            "This worker is not on this device. Please add a new worker for this device.",
-          ),
-        ),
-      );
+      // Need to import key
+      if (mounted) {
+        _showImportDialog(workerAddress);
+      }
     }
+  }
+
+  void _showImportDialog(String workerAddress) {
+    final keyController = TextEditingController();
+    String? error;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          backgroundColor: Colors.grey[900],
+          title: Text(
+            "Verify Worker",
+            style: GoogleFonts.spaceGrotesk(color: Colors.white),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "To use this worker, you must import its Private Key to verify ownership.",
+                style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 13),
+              ),
+              const SizedBox(height: 15),
+              TextField(
+                controller: keyController,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: "Enter Private Key (0x...)",
+                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  errorText: error,
+                  filled: true,
+                  fillColor: Colors.black,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            ModernButton(
+              text: "Import & Verify",
+              onPressed: () async {
+                final inputKey = keyController.text.trim();
+                if (inputKey.isEmpty) {
+                  setState(() => error = "Please enter a key");
+                  return;
+                }
+
+                try {
+                  // 1. Check format
+                  final key = EthPrivateKey.fromHex(inputKey);
+
+                  // 2. Check address match
+                  if (key.address.hex.toLowerCase() !=
+                      workerAddress.toLowerCase()) {
+                    setState(
+                      () => error =
+                          "Key does not match the selected worker address!",
+                    );
+                    return;
+                  }
+
+                  // 3. Save
+                  await _walletService.saveWorkerKey(workerAddress, inputKey);
+
+                  // 4. Proceed
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setString('last_used_worker', workerAddress);
+
+                  if (mounted) {
+                    Navigator.pop(context); // Close dialog
+                    Navigator.of(context).pushReplacementNamed('/funding');
+                  }
+                } catch (e) {
+                  debugPrint("Import Error: $e");
+                  setState(() => error = "Invalid Private Key");
+                }
+              },
+              icon: Icons.check,
+              color: const Color(0xFF00FF94),
+              textColor: Colors.black,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _addNewWorker() {
@@ -113,38 +216,67 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
                         itemCount: _workers.length,
                         itemBuilder: (context, index) {
                           final worker = _workers[index];
-                          final isLocal = worker == _localWorkerAddress;
+                          final isLastUsed =
+                              worker == _lastUsedWorker?.toLowerCase();
+                          final balance = _balances[worker] ?? "Loading...";
+
                           return Card(
                             color: Colors.grey[900],
                             margin: const EdgeInsets.only(bottom: 12),
                             child: ListTile(
-                              title: Text(
-                                worker,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                ),
-                              ),
-                              subtitle: isLocal
-                                  ? const Text(
-                                      "Current Device",
-                                      style: TextStyle(
-                                        color: Color(0xFF00FF94),
-                                      ),
-                                    )
-                                  : const Text(
-                                      "Other Device",
-                                      style: TextStyle(color: Colors.grey),
+                              title: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    worker,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 13,
                                     ),
-                              trailing: isLocal
-                                  ? IconButton(
-                                      icon: const Icon(
-                                        Icons.arrow_forward,
-                                        color: Color(0xFF00FF94),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        "Balance: ",
+                                        style: TextStyle(
+                                          color: Colors.grey[400],
+                                          fontSize: 12,
+                                        ),
                                       ),
-                                      onPressed: () => _useWorker(worker),
+                                      Text(
+                                        balance,
+                                        style: const TextStyle(
+                                          color: Color(0xFF00FF94),
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              subtitle: isLastUsed
+                                  ? Padding(
+                                      padding: const EdgeInsets.only(top: 4.0),
+                                      child: Text(
+                                        "Last Used",
+                                        style: GoogleFonts.inter(
+                                          color: Colors
+                                              .amber, // Highlight last used
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
                                     )
                                   : null,
+                              trailing: IconButton(
+                                icon: const Icon(
+                                  Icons.arrow_forward,
+                                  color: Colors.white,
+                                ),
+                                onPressed: () => _useWorker(worker),
+                              ),
                             ),
                           );
                         },

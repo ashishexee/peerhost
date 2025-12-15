@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:peerhost_app/services/wallet_connect_service.dart';
 import 'package:peerhost_app/widgets/modern_button.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,6 +19,25 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
     _walletService.modal.addListener(_onConnectionChange);
+    _checkSavedSession();
+  }
+
+  Future<void> _checkSavedSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasConnected = prefs.getBool('has_connected') ?? false;
+
+    if (hasConnected) {
+      setState(() => _isLoading = true);
+      // Attempt to restore session
+      await _walletService.initialize(context);
+
+      // If restoration failed (session expired/disconnected), stop loading
+      if (!_walletService.isConnected) {
+        setState(() => _isLoading = false);
+        await prefs.setBool('has_connected', false);
+      }
+      // If successful, _onConnectionChange will handle navigation
+    }
   }
 
   @override
@@ -26,8 +46,10 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _onConnectionChange() {
+  void _onConnectionChange() async {
     if (_walletService.isConnected) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('has_connected', true);
       _navigateToWorkerList();
     }
   }

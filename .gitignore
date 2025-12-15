@@ -6,3 +6,4 @@
 /packages/contracts/out
 /apps/mcp-client/node_modules
 /testing-nodejs/node_modules
+/peerhost_app/android/build

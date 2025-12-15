@@ -48,45 +48,50 @@ class WalletConnectService with WidgetsBindingObserver {
     }
   }
 
-  Future<void> _checkForSession() async {
-    if (!_isInitialized) return;
-
+  Future<void> _checkForSession({bool polling = true}) async {
     // Force reconnection to relay if needed
     try {
-      _logger.i("Forcing relay connection...");
-      await _web3App.core.relayClient.connect();
-      _logger.i(
-        "Relay connected status: ${_web3App.core.relayClient.isConnected}",
-      );
+      if (_web3App.core.relayClient.isConnected == false) {
+        _logger.i("Forcing relay connection...");
+        await _web3App.core.relayClient.connect();
+      }
     } catch (e) {
       _logger.w("Failed to force relay connect: $e");
     }
 
+    // Check immediately first
+    if (_checkSessions()) return;
+
+    if (!polling) return;
+
     // Poll for 10 seconds after resume to catch the session arriving via socket
     int retries = 0;
     while (retries < 20) {
-      try {
-        final sessions = _web3App.sessions.getAll();
-        if (sessions.isNotEmpty) {
-          _sessionData = sessions.first;
-          connectionNotifier.value = true;
-          _logger.i(
-            "Session found on resume (attempt ${retries + 1}): $connectedAddress",
-          );
-          return;
-        }
-      } catch (e) {
-        _logger.e("Error checking sessions on resume: $e");
-      }
       await Future.delayed(const Duration(milliseconds: 500));
+      if (_checkSessions()) return;
       retries++;
     }
 
     _logger.w(
-      "No session found after 10s polling. "
+      "No session found after polling. "
       "RelayConnected: ${_web3App.core.relayClient.isConnected}, "
       "Pairings: ${_web3App.pairings.getAll().length}",
     );
+  }
+
+  bool _checkSessions() {
+    try {
+      final sessions = _web3App.sessions.getAll();
+      if (sessions.isNotEmpty) {
+        _sessionData = sessions.first;
+        connectionNotifier.value = true;
+        _logger.i("Session found: $connectedAddress");
+        return true;
+      }
+    } catch (e) {
+      _logger.e("Error checking sessions: $e");
+    }
+    return false;
   }
 
   Future<bool> initialize(BuildContext context) async {
@@ -96,7 +101,7 @@ class WalletConnectService with WidgetsBindingObserver {
       _appLinks = AppLinks();
       _linkSubscription = _appLinks.uriLinkStream.listen((uri) {
         _logger.i("Received deep link: $uri");
-        _checkForSession();
+        _checkForSession(polling: true);
       });
 
       // ignore: deprecated_member_use
@@ -120,9 +125,9 @@ class WalletConnectService with WidgetsBindingObserver {
       _web3App.onSessionUpdate.subscribe(_onSessionUpdate);
       _web3App.onSessionConnect.subscribe(_onSessionConnect);
 
-      _checkForSession();
-
       _isInitialized = true;
+      await _checkForSession(polling: false);
+
       return true;
     } catch (e) {
       _logger.e("Error initializing WalletConnect: $e");
