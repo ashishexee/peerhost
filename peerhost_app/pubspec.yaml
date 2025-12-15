@@ -60,6 +60,7 @@ dependencies:
   hex: ^0.2.0
   shared_preferences: ^2.5.4
   walletconnect_flutter_v2: ^2.1.11
+  google_fonts: ^6.3.3
 
 dev_dependencies:
   flutter_test:

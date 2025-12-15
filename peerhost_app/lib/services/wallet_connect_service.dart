@@ -358,6 +358,36 @@ class WalletConnectService with WidgetsBindingObserver {
     final data = function.encodeCall([EthereumAddress.fromHex(address)]);
     return bytesToHex(data, include0x: true);
   }
+
+  Future<String> fundWorker(String workerAddress, double amountEth) async {
+    if (!isConnected) throw Exception("Not connected");
+    final chainIdString = 'eip155:80002';
+    final sender = connectedAddress!;
+
+    // Convert ETH to Wei (10^18)
+    // Simple conversion for now, ideally use BigInt with proper scaling
+    final valueWei = (amountEth * 1e18).toStringAsFixed(0);
+    final valueHex = "0x${BigInt.parse(valueWei).toRadixString(16)}";
+
+    final tx = EthereumTransaction(
+      from: sender,
+      to: workerAddress,
+      data: "0x", // Empty data for simple transfer
+      value: valueHex,
+    );
+
+    _launchWalletApp();
+
+    final result = await _web3App.request(
+      topic: _sessionData!.topic,
+      chainId: chainIdString,
+      request: SessionRequestParams(
+        method: 'eth_sendTransaction',
+        params: [tx.toJson()],
+      ),
+    );
+    return result.toString();
+  }
 }
 
 class EthereumTransaction {

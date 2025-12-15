@@ -39,15 +39,7 @@ const String EXECUTION_COORDINATOR_ABI = '''
     ],
     "stateMutability": "view"
   },
-  {
-    "type": "function",
-    "name": "addDelegate",
-    "inputs": [
-      { "name": "worker", "type": "address", "internalType": "address" }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
+
   {
     "type": "function",
     "name": "triggerRequest",

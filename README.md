@@ -1,3 +1,10 @@
+> [!NOTE]
+> **Worker App MVP**
+>
+> An early MVP of the Worker application has been pushed for reference.
+> It is **out of scope for Wave 4 judging** and included only to showcase planned
+> expansion in upcoming waves.
+
 # PeerHost — The Universal Decentralized & Monetizable Serverless Network
 
 **PeerHost** is a next-generation serverless platform that evolves the cloud in two revolutionary ways:
