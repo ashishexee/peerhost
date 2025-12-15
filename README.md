@@ -1,6 +1,4 @@
 > [!NOTE]
-> **Worker App MVP**
->
 > An early MVP of the Worker application has been pushed for reference.
 > It is **out of scope for Wave 4 judging** and included only to showcase planned
 > expansion in upcoming waves.
