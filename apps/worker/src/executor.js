@@ -1,7 +1,19 @@
 import vm from "vm";
+import crypto from "crypto";
+import path from "path";
+import os from "os";
 
 export async function executeFunction(code, args, envVars = {}) {
-    // Create a sandbox
+    const customRequire = (moduleName) => {
+        switch (moduleName) {
+            case "crypto": return crypto;
+            case "path": return path;
+            case "os": return os;
+            case "fs": throw new Error("FileSystem access is restricted via require('fs').");
+            default: throw new Error(`Module '${moduleName}' is not available in the sandbox.`);
+        }
+    };
+
     const sandbox = {
         console: {
             log: (...args) => console.log("[Func Log]", ...args),
@@ -13,41 +25,55 @@ export async function executeFunction(code, args, envVars = {}) {
         Buffer: global.Buffer,
         TextEncoder: global.TextEncoder,
         TextDecoder: global.TextDecoder,
-        setTimeout: global.setTimeout,
         clearTimeout: global.clearTimeout,
         setInterval: global.setInterval,
         clearInterval: global.clearInterval,
+        require: customRequire,
+        crypto: crypto, 
         process: {
             env: envVars,
             nextTick: global.process.nextTick,
             cwd: () => "/"
         },
+        module: { exports: {} },
+        exports: {},
         args,
-        env: envVars
+        env: envVars,
+        navigator: {
+            userAgent: "PeerHost-Worker/1.0",
+            language: "en-US",
+            platform: "NodeJS"
+        },
+        self: {},
+        window: {},
     };
 
-    vm.createContext(sandbox);
+    sandbox.globalThis = sandbox;
+    sandbox.self = sandbox;
+    sandbox.window = sandbox;
+    sandbox.exports = sandbox.module.exports;
 
-    const wrappedCode = `
-        (async () => {
-            ${code}
-             // Expecting the user code to perform logic and return something
-             // If user code is just a script, we might need a specific structure
-             // For now, assuming standard JS script that might return valid JSON-serializable data
-        })();
-    `;
+    vm.createContext(sandbox);
 
     try {
         console.log("[Executor] Running code...");
         const result = await vm.runInContext(code, sandbox, {
-            timeout: 5000, // 5s timeout
+            timeout: 5000,
             displayErrors: true
         });
 
-        // If code exports a default function, we might need to call it.
-        // But for this prototype, we assume the code *evaluates* to the result 
-        // OR the users code sets a global 'result' variable. 
-        // Let's assume standard "eval" return for simplicity.
+        const entryPoint = sandbox.module.exports.default || sandbox.module.exports;
+
+        if (typeof entryPoint === 'function') {
+            console.log("[Executor] Invoking exported function...");
+            const functionResult = await entryPoint(args || {});
+            return functionResult;
+        }
+        if (sandbox.peerhost_worker && sandbox.peerhost_worker.default) {
+            const functionResult = await sandbox.peerhost_worker.default(args || {});
+            return functionResult;
+        }
+
         return result;
 
     } catch (err) {
