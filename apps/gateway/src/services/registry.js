@@ -1,4 +1,4 @@
-import { supabase } from "./db/supabase.js";
+import { supabase } from "../db/supabase.js";
 
 export async function registerFunction(wallet, project, fn, cid) {
     const { error } = await supabase

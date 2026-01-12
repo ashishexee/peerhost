@@ -1,8 +1,9 @@
-import { buildRequest } from "./request-builder.js";
-import { triggerExecution } from "./trigger.js";
-import { waitForWorkerResult } from "./worker-results.js";
-import { validateProjectName, validateFunctionName } from "./utils/validators.js";
-import { supabase } from "./db/supabase.js";
+import { buildRequest } from "../utils/request-builder.js";
+import { triggerExecution } from "../controllers/trigger.js";
+import { waitForWorkerResult } from "../controllers/worker-results.js";
+import { validateProjectName, validateFunctionName } from "../utils/validators.js";
+import { supabase } from "../db/supabase.js";
+import { checkAndRecordUsage } from "../services/billing-service.js";
 
 
 export default async function router(req, reply) {
@@ -19,17 +20,20 @@ export default async function router(req, reply) {
                 error: "Invalid Function Name"
             })
         }
+
+        const usageCheck = await checkAndRecordUsage(wallet, project, fn);
+        if (!usageCheck.allowed) {
+            return reply.status(usageCheck.code).send({
+                error: usageCheck.error
+            });
+        }
+
         const normalizedRequest = buildRequest(req, {
             wallet,
             project,
             functionName: fn
         });
 
-        // ---------------------------------------------------------
-        // x402 Commerce Layer Check 
-        // ---------------------------------------------------------
-
-        // 1. Fetch function metadata from Supabase
         req.log.info(`[x402] Checking price for: ${wallet}/${project}/${fn}`);
 
         const { data: meta, error: metaError } = await supabase
@@ -53,13 +57,10 @@ export default async function router(req, reply) {
         const price = meta?.price || 0;
         const beneficiary = meta?.beneficiary || wallet;
 
-        // 2. Gate Execution
         if (price > 0) {
             const paymentHeader = req.headers['x-payment'] || req.headers['x-protocol-payment'];
 
-            // A. No Payment Header -> 402 Challenge
             if (!paymentHeader) {
-                // Return Standard x402 Header
                 const x402Params = `token="${Buffer.from(JSON.stringify({
                     amount: price,
                     currency: "USDC",
@@ -70,7 +71,7 @@ export default async function router(req, reply) {
                 reply.header("WWW-Authenticate", `x402 ${x402Params}`);
                 reply.type('application/json');
 
-                const atomicPrice = Math.floor(price * 1_000_000).toString(); // USDC 6 decimals
+                const atomicPrice = Math.floor(price * 1_000_000).toString();
 
                 return reply.status(402).send({
                     x402Version: 1,
@@ -91,8 +92,7 @@ export default async function router(req, reply) {
                 });
             }
 
-            // B. Payment Header Present -> Verification (Mock for v1)
-            const isValid = paymentHeader.length > 10; // Mock verification
+            const isValid = paymentHeader.length > 10;
 
             if (!isValid) {
                 return reply.status(403).send({
@@ -100,19 +100,14 @@ export default async function router(req, reply) {
                 });
             }
 
-            // Payment Verified! Log the transaction for Earnings Dashboard
-            // Fire-and-forget (don't block execution)
             (async () => {
                 try {
                     const paymentHeader = req.headers['x-payment'];
 
-                    // Decode payment data to extract payer
                     let payerWallet = '0x0000000000000000000000000000000000000000';
                     try {
-                        // First, log if it looks like a JWT (has dots)
                         if (paymentHeader.includes('.')) {
                             req.log.info(`[x402 DEBUG] Payment header looks like JWT format`);
-                            // Try to decode JWT payload (middle part)
                             const parts = paymentHeader.split('.');
                             if (parts.length === 3) {
                                 const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
@@ -120,11 +115,8 @@ export default async function router(req, reply) {
                                 payerWallet = payload.payer || payload.from || payload.sub || payload.address || '0x0000000000000000000000000000000000000000';
                             }
                         } else {
-                            // Standard base64 JSON
                             const paymentData = JSON.parse(Buffer.from(paymentHeader, 'base64').toString());
                             req.log.info(`[x402 DEBUG] Full decoded object: ${JSON.stringify(paymentData, null, 2)}`);
-
-                            // Log ALL keys in the object
                             req.log.info(`[x402 DEBUG] Available keys: ${Object.keys(paymentData).join(', ')}`);
 
                             payerWallet = paymentData?.payload?.authorization?.from
@@ -162,15 +154,27 @@ export default async function router(req, reply) {
                 }
             })();
         }
-        // ---------------------------------------------------------
 
-        // 3. Trigger Execution (Only if paid or free)
         const { requestId } = await triggerExecution(normalizedRequest);
 
-        // wait for the reponse from the worker
-        const finalResult = await waitForWorkerResult(requestId, {
-            timeoutMs: 20_000
+        const finalResultRaw = await waitForWorkerResult(requestId, {
+            timeoutMs: 100_000
         });
+
+        req.log.info(`[Router Debug] Raw Worker Result: ${typeof finalResultRaw} - ${finalResultRaw}`);
+
+        let finalResult = finalResultRaw;
+        if (typeof finalResult === 'string') {
+            try {
+                finalResult = JSON.parse(finalResult);
+            } catch (e) {
+                req.log.warn("Could not parse worker result as JSON, treating as raw string.");
+                finalResult = {
+                    status: 200,
+                    body: finalResultRaw
+                };
+            }
+        }
 
         reply.status(finalResult.status || 200);
 

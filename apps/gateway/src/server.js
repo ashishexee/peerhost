@@ -3,9 +3,9 @@ import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
 import dotenv from "dotenv";
-import router from "./router.js";
+import router from "./routes/router.js";
 import { parseWalletFromHost } from "./utils/wallet-parser.js";
-import { receiveWorkerResult } from "./worker-results.js";
+import { submitSignatureEndpoint } from "./controllers/worker-results.js";
 import { deployRepo } from "./services/github-deployer.js";
 import path from "path";
 import fs from "fs";
@@ -44,10 +44,9 @@ app.get("/health", async (req, reply) => {
   return { status: "ok", service: "peerhost-gateway" };
 });
 
-// GitHub OAuth Flow
 const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
 const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
-const FRONTEND_URL = "https://peerhost.vercel.app/auth/callback";
+const FRONTEND_URL = (process.env.FRONTEND_URL || "https://peerhost.vercel.app").replace(/\/$/, "") + "/auth/callback";
 
 app.get('/auth/github/login', async (req, reply) => {
   if (!GITHUB_CLIENT_ID) {
@@ -123,7 +122,7 @@ async function serveManifest(req, reply, wallet, project, host) {
           body: { type: "object", description: "JSON payload" }
         }
       },
-      url: `https://${host}/run/${wallet}/${project}/${f.function_name}`,
+      url: `${process.env.GATEWAY_URL || `https://${host}`}/run/${wallet}/${project}/${f.function_name}`,
       pricing: {
         price: f.price || 0,
         currency: "USDC",
@@ -135,8 +134,6 @@ async function serveManifest(req, reply, wallet, project, host) {
   return reply.send(manifest);
 }
 
-
-// Path-based routing for Vercel (where wildcard subdomains are not supported)
 app.all("/run/:wallet/:project/:fn", async (req, reply) => {
   try {
     const { wallet: rawWallet, project, fn } = req.params;
@@ -212,7 +209,28 @@ app.post('/deploy', async (request, reply) => {
   }
 });
 
-app.post("/_internal/worker-result", receiveWorkerResult);
+import { syncCreditsFromBlockchain } from "./services/billing-service.js";
+
+app.post('/billing/sync', async (req, reply) => {
+  const { wallet } = req.body || {};
+  if (!wallet) return reply.status(400).send({ error: "Missing wallet address" });
+
+  try {
+    const { data: dbRecord } = await supabase
+      .from('user_credits')
+      .select('*')
+      .eq('wallet', wallet.toLowerCase())
+      .maybeSingle();
+
+    const credits = await syncCreditsFromBlockchain(wallet, dbRecord || {});
+    return reply.send({ success: true, credits });
+  } catch (err) {
+    req.log.error(err);
+    return reply.status(500).send({ error: "Sync failed" });
+  }
+});
+
+app.post("/_internal/submit-signature", submitSignatureEndpoint);
 
 app.get("/_internal/requests/:requestId", async (req, reply) => {
   const { requestId } = req.params;
@@ -250,7 +268,8 @@ if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
 app.listen({ port: PORT, host: HOST })
   .then(() => {
     console.log(`PeerHost Gateway running on ${HOST}:${PORT}`);
-    console.log(`RPC_URL configured: ${process.env.RPC_URL ? 'YES' : 'NO'}`);
+    console.log(`RPC_URL configured: ${process.env.RPC_URL}`);
+    console.log(`EXECUTION_CONTRACT_ADDRESS: ${process.env.EXECUTION_CONTRACT_ADDRESS}`);
   })
   .catch((err) => {
     app.log.error(err);

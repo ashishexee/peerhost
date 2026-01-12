@@ -1,8 +1,7 @@
-import { supabase } from "./db/supabase.js";
+import { supabase } from "../db/supabase.js";
+import { consensusManager } from "../services/consensus-manager.js";
 
-
-
-export function waitForWorkerResult(requestId, { timeoutMs = 20000 } = {}) {
+export function waitForWorkerResult(requestId, { timeoutMs = 40000 } = {}) {
     return new Promise((resolve, reject) => {
         let isSettled = false;
         let pollInterval;
@@ -25,7 +24,6 @@ export function waitForWorkerResult(requestId, { timeoutMs = 20000 } = {}) {
             reject(err);
         }, timeoutMs);
 
-        // Check Logic
         const checkStatus = async () => {
             if (isSettled) return;
             const { data, error } = await supabase
@@ -42,14 +40,13 @@ export function waitForWorkerResult(requestId, { timeoutMs = 20000 } = {}) {
                 } else if (data.status === 'FAILED') {
                     isSettled = true;
                     cleanup();
-                    const err = new Error("Worker reported failure");
+                    const err = new Error("Worker reported failure or consensus failed");
                     err.code = "WORKER_FAILED";
                     reject(err);
                 }
             }
         };
 
-        // 1. Realtime Subscription
         const channel = supabase
             .channel(`request-${requestId}`)
             .on(
@@ -62,51 +59,36 @@ export function waitForWorkerResult(requestId, { timeoutMs = 20000 } = {}) {
                 },
                 (payload) => {
                     if (isSettled) return;
-                    console.log(`[Gateway] Realtime update received for ${requestId}`);
-                    // Re-check full status to be safe
                     checkStatus();
                 }
             )
             .subscribe((status) => {
-                console.log(`[Gateway] Subscription status for ${requestId}:`, status);
-                // Initial check once subscribed
                 checkStatus();
             });
 
-        // 2. Polling Fallback (every 2s)
         pollInterval = setInterval(() => {
-            console.log(`[Gateway] Polling status for ${requestId}...`);
             checkStatus();
         }, 2000);
     });
 }
 
-/**
- * Called when a worker posts a result
- */
-export async function receiveWorkerResult(req, reply) {
-    const { requestId, result } = req.body;
+export async function submitSignatureEndpoint(req, reply) {
+    const { requestId, workerAddress, signature, resultHash, result } = req.body;
 
-    if (!requestId || !result) {
-        return reply.status(400).send({ error: "Missing requestId or result" });
+    if (!requestId || !workerAddress || !signature || !resultHash) {
+        return reply.status(400).send({ error: "Missing fields (requestId, workerAddress, signature, resultHash)" });
     }
 
-    // Update Supabase. This will trigger the Realtime event for the waiting Gateway (could be this one or another).
-    const { error } = await supabase
-        .from('requests')
-        .update({
-            status: 'COMPLETED',
-            result: result,
-            updated_at: new Date().toISOString()
-        })
-        .eq('request_id', requestId);
+    try {
+        const added = await consensusManager.addSignature(requestId, workerAddress, signature, resultHash, result);
 
-    if (error) {
-        req.log.error(error);
-        return reply.status(500).send({
-            error: "Failed to update result"
-        });
+        if (added) {
+            return reply.send({ success: true, status: "accepted" });
+        } else {
+            return reply.status(409).send({ error: "Duplicate or invalid session" });
+        }
+    } catch (err) {
+        req.log.error(err);
+        return reply.status(500).send({ error: "Internal Error" });
     }
-
-    return reply.send({ success: true });
 }

@@ -1,12 +1,11 @@
-// this is reponsible for interacting with the admin smart contract
-
-import { ethers, JsonRpcProvider } from "ethers";
-import { getFunctionCID } from "./registry.js";
+import { ethers } from "ethers";
+import { getFunctionCID } from "../services/registry.js";
 import { createRequire } from "module";
-import { supabase } from "./db/supabase.js";
+import { supabase } from "../db/supabase.js";
+import { consensusManager } from "../services/consensus-manager.js";
 
 const require = createRequire(import.meta.url);
-const ExecutionABI = require("./abi/ExecutionCoordinator.json");
+const ExecutionABI = require("../abi/ExecutionCoordinator.json");
 
 let contractInstance = null;
 
@@ -22,7 +21,6 @@ function getContract() {
 
     return contractInstance;
 }
-
 
 export async function triggerExecution({ request, hash }) {
 
@@ -58,8 +56,6 @@ export async function triggerExecution({ request, hash }) {
     if (!requestId) {
         throw new Error("Failed to extract requestId");
     }
-
-    // Persist the pending request in Supabase
     console.log(`[Trigger] Inserting requestId ${requestId} into Supabase with result:`, JSON.stringify({ http: request.http }));
 
     const { error } = await supabase
@@ -67,19 +63,17 @@ export async function triggerExecution({ request, hash }) {
         .insert({
             request_id: requestId,
             status: 'PENDING',
-            // Stash inputs in 'result' col since 'inputs' col doesn't exist
-            result: { http: request.http },
+            result: request,
             created_at: new Date().toISOString()
         });
 
     if (error) {
         console.error("Failed to insert pending request:", error);
-        // We warn but do not throw, as the chain event happened.
-        // The subscription might miss it if logic relies solely on DB existence,
-        // but `waitForWorkerResult` might just listen to "updates".
     } else {
         console.log(`[Trigger] Successfully inserted requestId ${requestId}`);
     }
+
+    consensusManager.startSession(requestId);
 
     return { requestId };
 }

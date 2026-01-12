@@ -1,6 +1,6 @@
 import crypto from "crypto";
-import { canonicalizeJson } from "./utils/canonical-json.js";
-import { filterHeaders } from "./utils/header-filter.js";
+import { canonicalizeJson } from "./canonical-json.js";
+import { filterHeaders } from "./header-filter.js";
 
 export function buildRequest(req, identity) {
     const { wallet, project, functionName } = identity;
