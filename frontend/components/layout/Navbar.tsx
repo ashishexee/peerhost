@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ChevronDown, Wallet as WalletIcon, LogOut, Github } from 'lucide-react';
-import { useWallet } from '../context/WalletContext';
+import { useWallet } from '../../utils/WalletContext';
 
 const NavItem = ({ label }: { label: string }) => (
   <button className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1 px-2 py-1 whitespace-nowrap">
@@ -29,7 +29,7 @@ const Navbar = () => {
     navigate('/');
   };
 
-  const formatAddress = (addr: string) => 
+  const formatAddress = (addr: string) =>
     `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
 
   return (
@@ -37,63 +37,63 @@ const Navbar = () => {
       <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); }} className="font-lustra font-bold text-xl tracking-tighter flex items-center gap-2 cursor-pointer bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500">
-             PeerHost
+            PeerHost
           </a>
           <div className="hidden lg:flex items-center gap-1">
-            <button 
-                onClick={() => navigate('/docs')}
-                className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1 px-2 py-1 whitespace-nowrap"
+            <button
+              onClick={() => navigate('/docs')}
+              className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1 px-2 py-1 whitespace-nowrap"
             >
-                Docs
+              Docs
             </button>
-            <button 
-                onClick={() => navigate('/workers')}
-                className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1 px-2 py-1 whitespace-nowrap"
+            <button
+              onClick={() => navigate('/workers')}
+              className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1 px-2 py-1 whitespace-nowrap"
             >
-                Run Node
+              Run Node
             </button>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-3">
-          <a 
-            href="https://github.com/ashishexee/peerhost" 
-            target="_blank" 
+          <a
+            href="https://github.com/ashishexee/peerhost"
+            target="_blank"
             rel="noopener noreferrer"
             className="text-gray-400 hover:text-white transition-colors p-2"
           >
             <Github className="w-5 h-5" />
           </a>
           {isConnected && location.pathname !== '/deploy' && (
-              <button 
-                onClick={() => navigate('/deploy')}
-                className="text-sm text-gray-300 hover:text-white px-3 py-1.5 transition-colors"
-              >
-                Go to Console
-              </button>
+            <button
+              onClick={() => navigate('/deploy')}
+              className="text-sm text-gray-300 hover:text-white px-3 py-1.5 transition-colors"
+            >
+              Go to Console
+            </button>
           )}
 
           {isConnected && address ? (
             <div className="flex items-center gap-2">
-                 <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-md border border-white/20 bg-white/5 text-sm text-white">
-                    <WalletIcon className="w-4 h-4" />
-                    <span className="font-mono">{formatAddress(address)}</span>
-                 </div>
-                 <button 
-                    onClick={handleDisconnect}
-                    className="p-2 text-gray-400 hover:text-white"
-                    title="Disconnect"
-                 >
-                    <LogOut className="w-4 h-4" />
-                 </button>
+              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-md border border-white/20 bg-white/5 text-sm text-white">
+                <WalletIcon className="w-4 h-4" />
+                <span className="font-mono">{formatAddress(address)}</span>
+              </div>
+              <button
+                onClick={handleDisconnect}
+                className="p-2 text-gray-400 hover:text-white"
+                title="Disconnect"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
           ) : (
-            <button 
-                onClick={handleConnect}
-                className="text-sm text-black bg-white font-medium px-4 py-2 rounded-md hover:bg-gray-200 transition-colors flex items-center gap-2"
+            <button
+              onClick={handleConnect}
+              className="text-sm text-black bg-white font-medium px-4 py-2 rounded-md hover:bg-gray-200 transition-colors flex items-center gap-2"
             >
-                <WalletIcon className="w-4 h-4" />
-                Connect Wallet
+              <WalletIcon className="w-4 h-4" />
+              Connect Wallet
             </button>
           )}
         </div>

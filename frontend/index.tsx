@@ -2,7 +2,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import { WalletProvider } from './context/WalletContext';
+import { WalletProvider } from './utils/WalletContext';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
