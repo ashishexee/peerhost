@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useWallet } from '../context/WalletContext';
+import { useWallet } from '../../utils/WalletContext';
 import { Github, Folder, ArrowRight, Loader2, Play } from 'lucide-react';
 
 export default function Dashboard() {
@@ -78,8 +78,8 @@ export default function Dashboard() {
                                         key={repo.id}
                                         onClick={() => setSelectedRepo(repo)}
                                         className={`p-3 rounded-lg border cursor-pointer transition-all ${selectedRepo?.id === repo.id
-                                                ? 'bg-white/10 border-white text-white'
-                                                : 'bg-white/5 border-white/5 text-gray-400 hover:border-white/20'
+                                            ? 'bg-white/10 border-white text-white'
+                                            : 'bg-white/5 border-white/5 text-gray-400 hover:border-white/20'
                                             }`}
                                     >
                                         <div className="flex items-center gap-2">
@@ -137,7 +137,7 @@ export default function Dashboard() {
 
                                         setLoading(true);
                                         try {
-                                            const res = await fetch('https://peerhost-jl8u.vercel.app/deploy', {
+                                            const res = await fetch(`${process.env.GATEWAY_URL}/deploy`, {
                                                 method: 'POST',
                                                 headers: { 'Content-Type': 'application/json' },
                                                 body: JSON.stringify({

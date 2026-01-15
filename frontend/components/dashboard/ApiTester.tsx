@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 import { Play, Plus, Trash2, Loader2, AlertCircle, CheckCircle2, DollarSign, Copy, Check, Contact } from 'lucide-react';
-import { useWallet } from '../context/WalletContext';
+import { useWallet } from '../../utils/WalletContext';
 import { BrowserProvider, Contract, parseUnits, formatUnits } from 'ethers';
 import { toast } from 'sonner';
 
@@ -261,11 +262,11 @@ export default function ApiTester() {
                     {/* Free Endpoint */}
                     <div className="flex items-center gap-3 bg-black/20 p-2.5 rounded-lg border border-white/5 group hover:border-white/10 transition-colors">
                         <span className="text-[10px] font-bold text-green-400 px-2 py-0.5 bg-green-500/10 rounded uppercase tracking-wider border border-green-500/20">Free</span>
-                        <span className="flex-1 text-xs text-gray-300 font-mono truncate" title="https://peerhost-jl8u.vercel.app/run/0xda684a91a506f3e303834c97784dee2b31bbc6bc/peerhostfree/hello">
+                        <span className="flex-1 text-xs text-gray-300 font-mono truncate" title={`${process.env.GATEWAY_URL}/run/${process.env.GATEWAY_ADDRESS}/peerhostfree/hello`}>
                             .../peerhostfree/hello
                         </span>
                         <button
-                            onClick={() => copyToClipboard('https://peerhost-jl8u.vercel.app/run/0xda684a91a506f3e303834c97784dee2b31bbc6bc/peerhostfree/hello', 'free')}
+                            onClick={() => copyToClipboard(`${process.env.GATEWAY_URL}/run/${process.env.GATEWAY_ADDRESS}/peerhostfree/hello`, 'free')}
                             className="p-1.5 text-gray-500 hover:text-white hover:bg-white/10 rounded-md transition-all"
                             title="Copy & Use"
                         >
@@ -276,11 +277,11 @@ export default function ApiTester() {
                     {/* Paid Endpoint */}
                     <div className="flex items-center gap-3 bg-black/20 p-2.5 rounded-lg border border-white/5 group hover:border-white/10 transition-colors">
                         <span className="text-[10px] font-bold text-yellow-400 px-2 py-0.5 bg-yellow-500/10 rounded uppercase tracking-wider border border-yellow-500/20">Paid</span>
-                        <span className="flex-1 text-xs text-gray-300 font-mono truncate" title="https://peerhost-jl8u.vercel.app/run/0xda684a91a506f3e303834c97784dee2b31bbc6bc/peerhostefjb/hello">
+                        <span className="flex-1 text-xs text-gray-300 font-mono truncate" title={`${process.env.GATEWAY_URL}/run/${process.env.GATEWAY_ADDRESS}/peerhostefjb/hello`}>
                             .../peerhostefjb/hello
                         </span>
                         <button
-                            onClick={() => copyToClipboard('https://peerhost-jl8u.vercel.app/run/0xda684a91a506f3e303834c97784dee2b31bbc6bc/peerhostefjb/hello', 'paid')}
+                            onClick={() => copyToClipboard(`${process.env.GATEWAY_URL}/run/${process.env.GATEWAY_ADDRESS}/peerhostefjb/hello`, 'paid')}
                             className="p-1.5 text-gray-500 hover:text-white hover:bg-white/10 rounded-md transition-all"
                             title="Copy & Use"
                         >
@@ -308,7 +309,7 @@ export default function ApiTester() {
                         type="text"
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
-                        placeholder="https://api.peerhost.com/..."
+                        placeholder={`${process.env.GATEWAY_URL}/...`}
                         className="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white font-mono focus:outline-none focus:border-purple-500 transition-colors"
                     />
                     <button
