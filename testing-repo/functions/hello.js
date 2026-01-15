@@ -1,5 +1,4 @@
-
-(async function () {
+export default async function (inputs) {
     return {
         body: {
             message: "Hello from the Real Pinata Cloud (JSON)!",
@@ -7,4 +6,4 @@
         },
         status: 200
     };
-})()
+}
