@@ -161,7 +161,7 @@ export default async function router(req, reply) {
             timeoutMs: 100_000
         });
 
-        req.log.info(`[Router Debug] Raw Worker Result: ${typeof finalResultRaw} - ${finalResultRaw}`);
+        req.log.info(`[Router Debug] Raw Worker Result: ${JSON.stringify(finalResultRaw)}`);
 
         let finalResult = finalResultRaw;
         if (typeof finalResult === 'string') {
@@ -174,6 +174,12 @@ export default async function router(req, reply) {
                     body: finalResultRaw
                 };
             }
+        }
+        if (finalResult && typeof finalResult === 'object' && !finalResult.body) {
+            finalResult = {
+                status: 200,
+                body: finalResult
+            };
         }
 
         reply.status(finalResult.status || 200);

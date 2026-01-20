@@ -29,7 +29,7 @@ export async function executeFunction(code, args, envVars = {}) {
         setInterval: global.setInterval,
         clearInterval: global.clearInterval,
         require: customRequire,
-        crypto: crypto, 
+        crypto: crypto,
         process: {
             env: envVars,
             nextTick: global.process.nextTick,
@@ -54,6 +54,10 @@ export async function executeFunction(code, args, envVars = {}) {
     sandbox.exports = sandbox.module.exports;
 
     vm.createContext(sandbox);
+    if (code.includes("export default")) {
+        console.log("[Executor] Transpiling ESM 'export default' to CommonJS...");
+        code = code.replace(/export\s+default\s+/, "module.exports = ");
+    }
 
     try {
         console.log("[Executor] Running code...");
