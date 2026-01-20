@@ -60,6 +60,31 @@ class ConsensusManager {
             return false;
         }
 
+        try {
+            const stakerInfo = await this.contract.workerStakes(workerAddress);
+
+            if (!this.minStake) {
+                this.minStake = await this.contract.MIN_STAKE();
+            }
+
+            const stakedAmount = stakerInfo[0];
+            const isBlacklisted = stakerInfo[1];
+
+            if (isBlacklisted) {
+                console.warn(`[Consensus] Rejected submission from BLACKLISTED worker ${workerAddress}`);
+                return false;
+            }
+
+            if (stakedAmount < this.minStake) {
+                console.warn(`[Consensus] Rejected submission from LOW STAKE worker ${workerAddress}. Stake: ${ethers.formatEther(stakedAmount)} < ${ethers.formatEther(this.minStake)}`);
+                return false;
+            }
+
+        } catch (err) {
+            console.error(`[Consensus] Stake verification failed: ${err.message}`);
+            return false;
+        }
+
         console.log(`[Consensus] Valid submission received for ${requestId} from ${workerAddress}`);
 
         session.submissions.push({
@@ -119,7 +144,7 @@ class ConsensusManager {
         }
 
         console.log(`[Consensus] Majority Hash: ${majorityHash} (${maxVotes} votes)`);
-        const SLASH_THRESHOLD = 0.66; 
+        const SLASH_THRESHOLD = 0.66;
         const totalVotes = session.submissions.length;
         const majorityPercentage = maxVotes / totalVotes;
 
@@ -155,7 +180,7 @@ class ConsensusManager {
 
             const requestIdHex = ethers.toBeHex(BigInt(requestId), 32);
             console.log('This is the data i am sending,, this is the workersArg', workersArg);
-            console.log('this is the fastestWorker that i am sending',fastestWorker);
+            console.log('this is the fastestWorker that i am sending', fastestWorker);
 
             const tx = await this.contract.finalizeRequests(
                 requestIdHex,

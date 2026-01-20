@@ -1,0 +1,39 @@
+Decentralized serverless with x402 API monetization and 'workers race to submit results' consensus mechanism is technically ambitious; however, execution trust model unclear. How does contract verify worker actually ran function correctly versus returning garbage, and censorship-resistance claim questionable when workers can simply refuse to run politically sensitive code; likely requires TEE/secure enclaves or ZK execution proofs not mentioned in 7.8K Solidity LOC.
+
+## Proposed Solution: Canary Auditing System (Active Integrity Checks)
+
+To address the "returning garbage" and trust concerns, we are introducing a proactive **Canary Auditing System**.
+
+### Concept
+The Gateway will run a background job that "actively hunts" for dishonest workers, rather than waiting for user complaints.
+
+### Mechanism
+1.  **Secret Test Requests**: The Gateway generates requests with known answers (e.g., "Calculate 2 + 2") disguised as normal traffic.
+2.  **Crowd Policing**: These requests are broadcast to the network just like any other user request.
+3.  **Natural Consensus**: Honest workers will calculate the correct result (e.g., "4") and form a majority.
+4.  **Automatic Slashing**: Any lazy/dishonest worker returning garbage (e.g., "0x00...") will naturally fall into the minority partition. The existing **Majority Voting & Slashing Protocol** will automatically reject their result and forfeit their stake, without the Gateway needing to act as a centralized judge.
+
+### Impact on Trust Model
+*   **Decentralized Verification**: We leverage the honest majority to police the network. The Gateway's role is merely to ensure there is a constant stream of "test questions" (sanity checks) so that lazy behavior is caught immediately, even during low traffic periods.
+*   **Economic Deterrence**: Rational workers cannot distinguish between a paying user's request and a "Canary" trap. To survive, they must execute *every* oktransaction honestly.
+
+
+
+## Proposed Solution: Hardware & Software Sandboxing
+
+To address the critique: *"Likely requires TEE/secure enclaves... vm module not secure."*
+
+### Level 1: Immediate Safety (Containerization)
+*   **Problem**: Node.js `vm` is not a security boundary.
+*   **Fix**: We will migrate to **Docker-based Execution**.
+*   **Mechanism**: Each request spins up a sterile container (e.g., `alpine-node`).
+*   **Benefit**: Malicious code (`while(true)`, `process.exit()`) only kills the container, not the Worker node.
+
+### Level 2: The "Verified Worker" Tier (TEE Support)
+*   **Concept**: We introduce a **Tiered Worker System**.
+*   **Standard Workers**: Run on any laptop. Good for 90% of jobs.
+*   **Verified Workers (SGX/Nitro)**: Run inside Hardware Enclaves.
+*   **Proof**: These workers submit a **Remote Attestation Quote** to the contract registry to prove they are running genuine hardware.
+*   **Use Case**: High-value financial computations or sensitive data processing.
+
+**Summary**: By offering both **Optimistic Speed** (for web apps) and **Hardware Security** (for defiant code), we cover the full spectrum of use cases while addressing the judges' concerns about the lack of TEE verification.
