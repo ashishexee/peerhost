@@ -1,12 +1,8 @@
 import axios from "axios";
 import NodeCache from "node-cache";
 
-// Cache for 1 hour
-const cache = new NodeCache({ stdTTL: 3600 });
 
-// Use a public gateway or your own. 
-// Ideally configure via env, defaulting to cloudflare or ipfs.io
-// Fallback Gateways
+const cache = new NodeCache({ stdTTL: 3600 });
 const GATEWAYS = [
     process.env.IPFS_GATEWAY || "https://gateway.pinata.cloud/ipfs",
     "https://ipfs.io/ipfs",
@@ -38,7 +34,6 @@ export async function fetchFunctionCode(cid) {
             return code;
         } catch (err) {
             console.warn(`[IPFS] Failed from ${gateway}: ${err.message}`);
-            // Continue to next gateway
         }
     }
 

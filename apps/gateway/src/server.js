@@ -10,7 +10,8 @@ import { deployRepo } from "./services/github-deployer.js";
 import path from "path";
 import fs from "fs";
 import { supabase } from "./db/supabase.js";
-
+import { consensusManager } from "./services/consensus-manager.js";
+import { AuditService } from "./services/audit-service.js";
 const rootEnv = path.resolve(process.cwd(), "../../.env");
 console.log(`[Gateway] Loading .env from: ${rootEnv}`);
 
@@ -229,6 +230,15 @@ app.post('/billing/sync', async (req, reply) => {
     return reply.status(500).send({ error: "Sync failed" });
   }
 });
+
+// Initialize Stealth Audit System
+if (consensusManager.contract && consensusManager.wallet) {
+  console.log("[Gateway] Starting Stealth Auditor...");
+  const auditService = new AuditService(consensusManager.contract, consensusManager.wallet);
+  auditService.start();
+} else {
+  console.warn("[Gateway] Audit Service skipped (No Blockchain Connection)");
+}
 
 app.post("/_internal/submit-signature", submitSignatureEndpoint);
 
