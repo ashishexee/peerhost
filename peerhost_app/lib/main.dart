@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:peerhost_app/background_services.dart';
+import 'package:peerhost_app/services/background_services.dart';
 import 'package:peerhost_app/screens/funding_screen.dart';
 import 'package:peerhost_app/screens/login_screen.dart';
 import 'package:peerhost_app/screens/service_control_screen.dart';
@@ -21,9 +21,17 @@ class MyApp extends StatelessWidget {
       title: 'PeerHost Worker',
       theme: ThemeData(
         brightness: Brightness.dark,
-        primarySwatch: Colors.deepPurple,
-        useMaterial3: true,
+        primaryColor: const Color(0xFF8247E5),
         scaffoldBackgroundColor: Colors.black,
+        useMaterial3: true,
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF8247E5),
+          secondary: Colors.white,
+          surface: Colors.black,
+          background: Colors.black,
+        ),
+        fontFamily:
+            'Inter', 
       ),
       initialRoute: '/',
       routes: {

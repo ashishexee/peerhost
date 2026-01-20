@@ -28,15 +28,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (hasConnected) {
       setState(() => _isLoading = true);
-      // Attempt to restore session
       await _walletService.initialize(context);
-
-      // If restoration failed (session expired/disconnected), stop loading
       if (!_walletService.isConnected) {
         setState(() => _isLoading = false);
         await prefs.setBool('has_connected', false);
       }
-      // If successful, _onConnectionChange will handle navigation
     }
   }
 
@@ -76,12 +72,19 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                "PeerHost",
-                style: GoogleFonts.spaceGrotesk(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+              ShaderMask(
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [Colors.white, Color(0xFF757575)], 
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ).createShader(bounds),
+                child: Text(
+                  "PeerHost",
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 48,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -97,8 +100,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   text: "Connect Wallet",
                   onPressed: _connectWallet,
                   icon: Icons.account_balance_wallet,
-                  color: const Color(0xFF00FF94),
-                  textColor: Colors.black,
+                  color: Colors.white, 
+                  textColor: Colors.black, 
                 ),
             ],
           ),

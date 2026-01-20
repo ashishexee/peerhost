@@ -3,6 +3,7 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:peerhost_app/services/wallet_connect_service.dart';
 import 'package:peerhost_app/services/wallet_service.dart';
+import 'package:peerhost_app/services/blockchain_service.dart';
 
 class ServiceControlScreen extends StatefulWidget {
   const ServiceControlScreen({super.key});
@@ -19,7 +20,12 @@ class _ServiceControlScreenState extends State<ServiceControlScreen> {
 
   final WalletConnectService _wcService = WalletConnectService();
   final WalletService _walletService = WalletService();
+  final BlockchainService _blockchainService = BlockchainService();
   String? _workerAddress;
+  bool _isRegistered = false;
+  bool _checkingRegistration = true;
+  bool _isLoadingRegistration = false;
+  double _stakedAmount = 0.0;
 
   @override
   void initState() {
@@ -43,6 +49,78 @@ class _ServiceControlScreenState extends State<ServiceControlScreen> {
       _workerAddress = key.address.hex;
     });
     // _addLog("Worker loaded: ${_workerAddress?.substring(0, 10)}...");
+    _checkRegistrationStatus();
+  }
+
+  Future<void> _checkRegistrationStatus() async {
+    if (_workerAddress == null) return;
+    setState(() => _checkingRegistration = true);
+
+    try {
+      final userAddress = _wcService.connectedAddress;
+      if (userAddress == null) {
+        setState(() => _checkingRegistration = false);
+        return;
+      }
+
+      final workers = await _blockchainService.getWorkersForUser(userAddress);
+      final isReg = workers.any(
+        (w) => w.toLowerCase() == _workerAddress!.toLowerCase(),
+      );
+
+      double staked = 0.0;
+      if (isReg) {
+        try {
+          final info = await _blockchainService.getWorkerStakeInfo(
+            _workerAddress!,
+          );
+          staked = info['stakedAmount'];
+        } catch (e) {
+          debugPrint("Failed to load stake: $e");
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _isRegistered = isReg;
+          _stakedAmount = staked;
+          _checkingRegistration = false;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error checking registration: $e");
+      if (mounted) setState(() => _checkingRegistration = false);
+    }
+  }
+
+  Future<void> _registerWorker() async {
+    if (_workerAddress == null) return;
+    setState(() => _isLoadingRegistration = true);
+
+    try {
+      final txHash = await _wcService.registerWorker(_workerAddress!);
+      _addLog("Registration TX Sent: $txHash");
+
+      // Optimistically update
+      setState(() {
+        _isRegistered = true;
+        _isLoadingRegistration = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Registration submitted! Please wait for confirmation.",
+          ),
+        ),
+      );
+    } catch (e) {
+      _addLog("Registration Failed: $e");
+      setState(() => _isLoadingRegistration = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed: $e"), backgroundColor: Colors.red),
+      );
+    }
   }
 
   void _addLog(String message) {
@@ -131,8 +209,10 @@ class _ServiceControlScreenState extends State<ServiceControlScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
-              color: Colors.grey[900], // Dark Card
-              border: Border(bottom: BorderSide(color: Colors.grey[800]!)),
+              color: Colors.white.withOpacity(0.02), // Subtle glass/transparent
+              border: Border(
+                bottom: BorderSide(color: Colors.white.withOpacity(0.1)),
+              ),
             ),
             child: Row(
               children: [
@@ -143,17 +223,21 @@ class _ServiceControlScreenState extends State<ServiceControlScreen> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: isRunning
-                        ? const Color(0xFF00FF94).withOpacity(0.2)
-                        : Colors.grey[800],
+                        ? const Color(0xFF8247E5).withOpacity(
+                            0.2,
+                          ) // Purple tint
+                        : Colors.white.withOpacity(0.05),
                     border: Border.all(
-                      color: isRunning ? const Color(0xFF00FF94) : Colors.grey,
+                      color: isRunning
+                          ? const Color(0xFF8247E5)
+                          : Colors.white.withOpacity(0.1),
                       width: 2,
                     ),
                     boxShadow: isRunning
                         ? [
                             BoxShadow(
-                              color: const Color(0xFF00FF94).withOpacity(0.4),
-                              blurRadius: 10,
+                              color: const Color(0xFF8247E5).withOpacity(0.4),
+                              blurRadius: 15,
                               spreadRadius: 1,
                             ),
                           ]
@@ -162,7 +246,7 @@ class _ServiceControlScreenState extends State<ServiceControlScreen> {
                   child: Icon(
                     isRunning ? Icons.bolt : Icons.power_settings_new,
                     size: 30,
-                    color: isRunning ? const Color(0xFF00FF94) : Colors.grey,
+                    color: isRunning ? const Color(0xFF8247E5) : Colors.grey,
                   ),
                 ),
                 const SizedBox(width: 15),
@@ -178,7 +262,7 @@ class _ServiceControlScreenState extends State<ServiceControlScreen> {
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: isRunning
-                              ? const Color(0xFF00FF94)
+                              ? const Color(0xFF8247E5)
                               : Colors.grey,
                           letterSpacing: 1.2,
                         ),
@@ -208,7 +292,7 @@ class _ServiceControlScreenState extends State<ServiceControlScreen> {
                         ? Colors.redAccent
                         : Colors.black,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(100),
                       side: isRunning
                           ? const BorderSide(color: Colors.redAccent)
                           : BorderSide.none,
@@ -227,6 +311,93 @@ class _ServiceControlScreenState extends State<ServiceControlScreen> {
               ],
             ),
           ),
+
+          // --- REGISTRATION / STAKE WARNING ---
+          if (!_checkingRegistration &&
+              _workerAddress != null &&
+              (!_isRegistered || (_isRegistered && _stakedAmount < 2.0)))
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.amber.withOpacity(0.1),
+                border: Border.all(color: Colors.amber.withOpacity(0.5)),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.warning_amber_rounded, color: Colors.amber),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          !_isRegistered
+                              ? "Worker Not Registered"
+                              : "Insufficient Stake",
+                          style: GoogleFonts.inter(
+                            color: Colors.amber,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                        Text(
+                          !_isRegistered
+                              ? "This device is lost unlink to your account."
+                              : "Worker needs 2.0 POL stake to operate.",
+                          style: GoogleFonts.inter(
+                            color: Colors.amber.withOpacity(0.8),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  if (!_isRegistered)
+                    ElevatedButton(
+                      onPressed: _isLoadingRegistration
+                          ? null
+                          : _registerWorker,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.amber,
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                      child: _isLoadingRegistration
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.black,
+                              ),
+                            )
+                          : const Text("Register"),
+                    )
+                  else
+                    ElevatedButton(
+                      onPressed: () {
+                        // Go to worker list to stake
+                        Navigator.of(context).pushNamed('/workers');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.amber,
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                      child: const Text("Stake"),
+                    ),
+                ],
+              ),
+            ),
 
           // --- LOGS HEADER ---
           Container(
@@ -256,9 +427,9 @@ class _ServiceControlScreenState extends State<ServiceControlScreen> {
               width: double.infinity,
               margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               decoration: BoxDecoration(
-                color: const Color(0xFF111111), // Very dark grey, almost black
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[800]!),
+                color: Colors.white.withOpacity(0.05), // Glass effect
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white.withOpacity(0.1)),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
@@ -275,7 +446,7 @@ class _ServiceControlScreenState extends State<ServiceControlScreen> {
                         child: Text(
                           _logs[index],
                           style: GoogleFonts.jetBrainsMono(
-                            color: const Color(0xFF00FF94), // Matrix green text
+                            color: Colors.grey[300], // White/Grey text
                             fontSize: 12,
                             height: 1.4,
                           ),

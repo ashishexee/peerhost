@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:web3dart/web3dart.dart';
+import 'package:web3dart/crypto.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:http/http.dart';
 import 'package:logger/logger.dart';
@@ -14,7 +16,6 @@ class BlockchainService {
   final Logger _logger = Logger();
   final WalletService _walletService = WalletService();
 
-  // Contract
   DeployedContract? _executionContract;
 
   BlockchainService() {
@@ -37,20 +38,15 @@ class BlockchainService {
       EXECUTION_COORDINATOR_ABI,
       "ExecutionCoordinator",
     );
-    final contractAddress = EthereumAddress.fromHex(
-      EXECUTION_COORDINATOR_ADDRESS,
-    );
+    final contractAddress = EthereumAddress.fromHex(EXECUTION_CONTRACT_ADDRESS);
 
     _executionContract = DeployedContract(contractAbi, contractAddress);
   }
 
-  /// Listen for ExecutionRequested events
   Stream<FilterEvent> listenForRequests() {
     if (_executionContract == null) throw Exception("Contract not initialized");
 
     final event = _executionContract!.event('ExecutionRequested');
-
-    // Create filter params
     final filter = FilterOptions.events(
       contract: _executionContract!,
       event: event,
@@ -60,22 +56,30 @@ class BlockchainService {
     return _client.events(filter);
   }
 
-  /// Listen for decoded requests (User Friendly stream)
   Stream<Map<String, dynamic>> listenForDecodedRequests() {
     return listenForRequests().asyncMap((event) async {
       final decoded = _executionContract!
           .event('ExecutionRequested')
           .decodeResults(event.topics ?? [], event.data ?? '');
 
-      // ABI: event ExecutionRequested(address indexed wallet, string project, string fn, string cid, uint256 requestId)
+      final requestIdBytes = decoded[4] as List<int>;
+      final requestIdBigInt = bytesToInt(requestIdBytes);
       return {
         'wallet': decoded[0].toString(),
         'project': decoded[1],
         'fn': decoded[2],
         'cid': decoded[3],
-        'requestId': decoded[4].toString(),
+        'requestId': requestIdBigInt.toString(),
       };
     });
+  }
+
+  BigInt bytesToInt(List<int> bytes) {
+    BigInt result = BigInt.from(0);
+    for (int i = 0; i < bytes.length; i++) {
+      result = (result << 8) + BigInt.from(bytes[i]);
+    }
+    return result;
   }
 
   /// Fetch code from IPFS (via Gateway or direct)
@@ -103,67 +107,91 @@ class BlockchainService {
     throw Exception("Failed to fetch code from any IPFS gateway");
   }
 
-  /// Fetch inputs from the PeerHost Gateway
   Future<Map<String, dynamic>> fetchInputs(String requestId) async {
-    // Convert BigInt requestId to string if needed, but usually it's passed as is
-    // The contract emits bytes32, but gateway usually expects decimal string or hex.
-    // Let's assume the Gateway expects the Decimal representation of the ID.
-
-    // We need to convert bytes32 hex to BigInt then toString()
     BigInt id = BigInt.parse(requestId);
-    String url = "$GATEWAY_URL/_internal/requests/$id";
+    String requestUrl = "$GATEWAY_URL/_internal/requests/$id";
 
-    _logger.d("Fetching inputs from $url");
+    _logger.d("Fetching inputs from $requestUrl");
 
-    // Retry logic
     for (int i = 0; i < 5; i++) {
       try {
         final response = await get(
-          Uri.parse(url),
+          Uri.parse(requestUrl),
         ).timeout(const Duration(seconds: 5));
         if (response.statusCode == 200) {
           return jsonDecode(response.body) as Map<String, dynamic>;
         }
       } catch (e) {
+        _logger.e("Failed to fetch inputs from $requestUrl: $e");
         await Future.delayed(const Duration(seconds: 1));
       }
     }
     throw Exception("Failed to fetch inputs");
   }
 
-  /// Submit result on-chain using the Session Key
-  Future<String> submitResult(String requestIdHex, String resultHash) async {
-    _logger.i("Submitting result on-chain for $requestIdHex");
+  Future<void> submitResultOffChain(
+    String requestIdString,
+    String resultString,
+  ) async {
+    _logger.i("Signing result off-chain for $requestIdString");
 
     final credentials = await _walletService.getOrGenerateWorkerKey();
+    final workerAddress = (await credentials.extractAddress()).hex;
+    BigInt rid = BigInt.parse(requestIdString);
+    final requestIdBytes = bigIntToBytes(rid);
+    final resultBytes = utf8.encode(resultString);
+    final resultHashBytes = keccak256(Uint8List.fromList(resultBytes));
+    final resultHashHex = bytesToHex(resultHashBytes, include0x: true);
+    final payloadToHash = Uint8List.fromList([
+      ...requestIdBytes,
+      ...resultHashBytes,
+    ]);
+    final messageHash = keccak256(payloadToHash);
 
-    final function = _executionContract!.function('submitResult');
+    final signature = await credentials.signPersonalMessage(messageHash);
+    final signatureHex = bytesToHex(signature, include0x: true);
 
-    // Convert hex strings to bytes
-    final requestIdBytes = hexToBytes(requestIdHex);
-    final resultHashBytes = hexToBytes(resultHash);
+    _logger.i("Signature generated: $signatureHex");
+    String submissionUrl = "$GATEWAY_URL/_internal/submit-signature";
 
     try {
-      final txHash = await _client.sendTransaction(
-        credentials,
-        Transaction.callContract(
-          contract: _executionContract!,
-          function: function,
-          parameters: [requestIdBytes, resultHashBytes],
-          maxGas: 500000,
-        ),
-        chainId: 31337, // Localhost / Hardhat Chain ID
+      final response = await post(
+        Uri.parse(submissionUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          "requestId": requestIdString,
+          "workerAddress": workerAddress,
+          "signature": signatureHex,
+          "resultHash": resultHashHex,
+          "result": jsonDecode(
+            resultString,
+          ), // Send actual JSON object if possible
+        }),
       );
 
-      _logger.e("Transaction submitted: $txHash");
-      return txHash;
+      if (response.statusCode == 200) {
+        _logger.i("Signature submitted successfully to Gateway");
+      } else {
+        _logger.e(
+          "Gateway rejected submission: ${response.statusCode} - ${response.body}",
+        );
+        throw Exception("Gateway rejected submission");
+      }
     } catch (e) {
-      _logger.e("Failed to submit result: $e");
+      _logger.e("Failed to submit signature: $e");
       rethrow;
     }
   }
 
-  // Helper utils
+  Uint8List bigIntToBytes(BigInt number) {
+    var bytes = Uint8List(32);
+    for (var i = 31; i >= 0; i--) {
+      bytes[i] = (number & BigInt.from(0xFF)).toInt();
+      number = number >> 8;
+    }
+    return bytes;
+  }
+
   List<int> hexToBytes(String hex) {
     if (hex.startsWith("0x")) {
       hex = hex.substring(2);
@@ -176,12 +204,10 @@ class BlockchainService {
     return bytes;
   }
 
-  /// Get Native Balance (Amoy)
   Future<EtherAmount> getWorkerBalance(String address) async {
     return await _client.getBalance(EthereumAddress.fromHex(address));
   }
 
-  /// Get Workers for a User Request
   Future<List<String>> getWorkersForUser(String userAddress) async {
     if (_executionContract == null) await initialize();
 
@@ -192,8 +218,39 @@ class BlockchainService {
       params: [EthereumAddress.fromHex(userAddress)],
     );
 
-    // result[0] is List<EthereumAddress>
     final List<dynamic> workers = result[0];
     return workers.map((e) => (e as EthereumAddress).hex).toList();
+  }
+
+  Future<String> getUserForWorker(String workerAddress) async {
+    if (_executionContract == null) await initialize();
+
+    final function = _executionContract!.function('workerToUser');
+    final result = await _client.call(
+      contract: _executionContract!,
+      function: function,
+      params: [EthereumAddress.fromHex(workerAddress)],
+    );
+
+    return (result[0] as EthereumAddress).hex;
+  }
+
+  Future<Map<String, dynamic>> getWorkerStakeInfo(String workerAddress) async {
+    if (_executionContract == null) await initialize();
+
+    final function = _executionContract!.function('workerStakes');
+    final result = await _client.call(
+      contract: _executionContract!,
+      function: function,
+      params: [EthereumAddress.fromHex(workerAddress)],
+    );
+    return {
+      'stakedAmount':
+          (result[0] as BigInt).toDouble() /
+          1e18, // Convert Wei to Eth (float for UI)
+      'isBlacklisted': result[1] as bool,
+      'probationCount': (result[2] as BigInt).toInt(),
+      'penaltyDeposited': (result[3] as BigInt).toDouble() / 1e18,
+    };
   }
 }

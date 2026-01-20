@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:peerhost_app/services/blockchain_service.dart';
 import 'package:peerhost_app/services/wallet_connect_service.dart';
 import 'package:peerhost_app/services/wallet_service.dart';
@@ -47,8 +48,8 @@ class _FundingScreenState extends State<FundingScreen> {
         _isLoading = false;
       });
 
-      if (_balance > 0.0001) {
-        // Threshold
+      if (_balance > 0.02) {
+        // Threshold (Need ~0.015 for 500k gas limit)
         _navigateToHome();
       }
     } catch (e) {
@@ -119,26 +120,73 @@ class _FundingScreenState extends State<FundingScreen> {
                 color: Colors.grey[900],
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
                 children: [
-                  Text(
-                    "Current Balance",
-                    style: GoogleFonts.inter(color: Colors.grey),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Worker Address",
+                        style: GoogleFonts.inter(color: Colors.grey),
+                      ),
+                      Row(
+                        children: [
+                          Text(
+                            _workerAddress != null
+                                ? "${_workerAddress!.substring(0, 6)}...${_workerAddress!.substring(_workerAddress!.length - 4)}"
+                                : "Loading...",
+                            style: GoogleFonts.jetBrainsMono(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () {
+                              if (_workerAddress != null) {
+                                Clipboard.setData(
+                                  ClipboardData(text: _workerAddress!),
+                                );
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("Address copied!"),
+                                  ),
+                                );
+                              }
+                            },
+                            child: const Icon(
+                              Icons.copy,
+                              color: Colors.grey,
+                              size: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  Text(
-                    "$_balance POL",
-                    style: GoogleFonts.jetBrainsMono(
-                      color: _balance == 0 ? Colors.red : Colors.green,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  const Divider(color: Colors.white24, height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Current Balance",
+                        style: GoogleFonts.inter(color: Colors.grey),
+                      ),
+                      Text(
+                        "$_balance POL",
+                        style: GoogleFonts.jetBrainsMono(
+                          color: _balance == 0 ? Colors.red : Colors.green,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
 
             const SizedBox(height: 30),
-            if (_balance < 0.0001) ...[
+            if (_balance < 0.02) ...[
               TextField(
                 controller: _amountController,
                 style: const TextStyle(color: Colors.white),

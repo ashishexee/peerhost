@@ -1,19 +1,19 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter_js/flutter_js.dart';
 import 'package:logger/logger.dart';
 
 class ExecutionEngine {
   final Logger _logger = Logger();
   late JavascriptRuntime _runtime;
+  Completer<String>? _activeCompleter;
 
   ExecutionEngine() {
     _logger.i("Initializing QuickJS Runtime...");
     _runtime = getJavascriptRuntime();
   }
 
-  /// Initialize the sandbox with polyfills
   void initialize() {
-    // 1. Console Polyfill
     _runtime.onMessage('log', (dynamic args) {
       _logger.d('[JS Log] $args');
     });
@@ -22,14 +22,26 @@ class ExecutionEngine {
       _logger.e('[JS Err] $args');
     });
 
-    // 2. Fetch Polyfill (Basic GET support for now)
-    // Note: flutter_js runs synchronously-ish or async depending on implementation.
-    // For async operations like fetch, we usually need to use 'sendMessage' back to Dart
-    // and wait for a promise. This is complex in pure QuickJS without a bridge.
-    // For MVP, we pass inputs directly, so fetch might not be needed INSIDE the worker
-    // unless the worker code explicitly fetches external data.
+    _runtime.onMessage('execution_result', (dynamic args) {
+      _logger.d("[JS Result Received] $args");
+      if (_activeCompleter != null && !_activeCompleter!.isCompleted) {
+        String resultPayload;
+        if (args is String) {
+          resultPayload = args;
+        } else {
+          resultPayload = jsonEncode(args);
+        }
+        _activeCompleter!.complete(resultPayload);
+      }
+    });
 
-    // Simplest Polyfill for environment variables
+    _runtime.onMessage('execution_error', (dynamic args) {
+      _logger.e("[JS Error Received] $args");
+      if (_activeCompleter != null && !_activeCompleter!.isCompleted) {
+        _activeCompleter!.completeError(Exception(args.toString()));
+      }
+    });
+
     _runtime.evaluate("""
       var window = global = this;
       var console = {
@@ -42,48 +54,107 @@ class ExecutionEngine {
     """);
   }
 
-  /// Executes the worker code
   Future<String> execute(String code, Map<String, dynamic> inputs) async {
     _logger.i("Executing worker code...");
 
-    // Inject Inputs as a global variable
-    /*
-      The worker code usually looks like:
-      export default async function(args) { ... }
-      OR it's a script that evaluates.
-      
-      We will wrap it to call a main function or similar.
-      Assuming the code expects 'args' to be available globally for this MVP.
-    */
+    _activeCompleter = Completer<String>();
 
-    // Serialize inputs
-    // We bind 'args' via evaluation or passing it.
-    final inputsJson = inputs.toString(); // Naive
-
-    // Evaluate the user code
-    // We wrap it in an IIFE to capture the return
-    final wrappedCode =
-        """
-      (function() {
-        var args = $inputsJson; // Creating global scope args
-        
-        // USER CODE START
-        $code
-        // USER CODE END
-        
-        // If the code evaluated to something, return it.
-        // Or if it set a result variable.
-      })();
-    """;
+    final inputsJson = jsonEncode(inputs);
 
     try {
-      final JsEvalResult jsResult = _runtime.evaluate(wrappedCode);
+      _runtime.evaluate("var args = $inputsJson;");
+      _runtime.evaluate(code);
 
-      if (jsResult.isError) {
-        throw Exception("JS Error: ${jsResult.stringResult}");
+      final invocationScript =
+          """
+      (function() {
+        console.log("Invoking worker...");
+        
+        if (typeof globalThis.peerhost_worker === 'undefined') {
+           console.error("Worker Global is undefined!");
+           throw new Error('Worker not found. The bundle did not assign globalThis.peerhost_worker.');
+        }
+        
+        var fn = globalThis.peerhost_worker.default || globalThis.peerhost_worker;
+        console.log("Worker Type: " + typeof fn);
+        
+        // Internal helper to handle the result
+        function sendRes(val) { 
+            console.log("Sending Result: " + JSON.stringify(val));
+            sendMessage('execution_result', JSON.stringify(val)); 
+        }
+        function sendErr(err) { 
+            console.error("Sending Error: " + err);
+            sendMessage('execution_error', err ? err.toString() : "Unknown JS Error"); 
+        }
+
+        try {
+           // 1. If it's a Function -> Call it
+           if (typeof fn === 'function') {
+              console.log("Calling worker function...");
+              var res = fn($inputsJson);
+              
+              if (res && typeof res.then === 'function') {
+                 console.log("Worker returned Promise. Waiting...");
+                 res.then(sendRes).catch(sendErr);
+                 return "PENDING";
+              }
+              sendRes(res); 
+              return "DONE";
+           }
+           
+           // 2. If it's a Promise (Direct Export of Async IIFE) -> Await it
+           if (fn && typeof fn.then === 'function') {
+              console.log("Worker exported a Promise. Waiting...");
+              fn.then(sendRes).catch(sendErr);
+              return "PENDING";
+           }
+
+           // 3. If it's an Object/Value -> Return it
+           console.log("Worker exported value: " + JSON.stringify(fn));
+           sendRes(fn);
+           return "DONE";
+           
+        } catch(e) {
+           sendErr(e);
+           return "PENDING";
+        }
+      })();
+      """;
+
+      final JsEvalResult jsResult = _runtime.evaluate(invocationScript);
+
+      if (jsResult.stringResult == "PENDING") {
+        Timer? pumpTimer;
+        pumpTimer = Timer.periodic(Duration(milliseconds: 10), (timer) {
+          _runtime.executePendingJob();
+          if (_activeCompleter!.isCompleted) timer.cancel();
+        });
+
+        try {
+          return await _activeCompleter!.future.timeout(
+            Duration(seconds: 30),
+            onTimeout: () {
+              if (!_activeCompleter!.isCompleted) {
+                _activeCompleter!.complete(
+                  jsonEncode({
+                    "error": "Timeout",
+                    "details": "Execution took too long (> 30s).",
+                  }),
+                );
+              }
+              return jsonEncode({
+                "error": "Timeout",
+                "details": "Execution took too long (> 30s).",
+              });
+            },
+          );
+        } finally {
+          pumpTimer.cancel();
+        }
       }
-
-      return jsResult.stringResult; // Return result as string
+      return await _activeCompleter!
+          .future; 
     } catch (e) {
       _logger.e("Execution failed: $e");
       rethrow;

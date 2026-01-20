@@ -39,7 +39,6 @@ class _WorkerOnboardingScreenState extends State<WorkerOnboardingScreen> {
   }
 
   void _onConnectionChange() {
-    // If we are unexpectedly disconnected or connected, refresh state
     setState(() {});
   }
 
@@ -73,24 +72,14 @@ class _WorkerOnboardingScreenState extends State<WorkerOnboardingScreen> {
     });
 
     try {
-      // 1. Ensure Connected
       if (!_wcService.isConnected) {
-        // This will launch wallet.
-        // We expect the user to approve and COME BACK.
         await _wcService.openModal(context);
-
-        // After openModal returns (either success, timeout, or user switch back)
         if (!_wcService.isConnected) {
-          // We don't throw immediately if timeout occurred but we are still waiting?
-          // But openModal now waits 120s. If it returns and still not connected, it failed.
           throw Exception(
             "Wallet not connected. Please try again and switch back to this app manually.",
           );
         }
       }
-
-      // 2. Register Worker (Send Transaction)
-      // This will launch wallet AGAIN for signing.
       final txHash = await _wcService.registerWorker(_workerAddress!);
       Logger().i("Registration TX: $txHash");
 

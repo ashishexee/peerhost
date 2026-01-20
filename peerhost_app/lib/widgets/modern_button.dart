@@ -38,7 +38,7 @@ class ModernButton extends StatelessWidget {
           foregroundColor: textColor,
           minimumSize: const Size(double.infinity, 56),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(100), // Pill shape
           ),
           elevation: 0,
         ),
