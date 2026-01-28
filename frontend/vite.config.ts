@@ -13,10 +13,10 @@ export default defineConfig(({ mode }) => {
     define: {
       'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-      'process.env.GATEWAY_URL': JSON.stringify(env.GATEWAY_URL),
-      'process.env.FRONTEND_URL': JSON.stringify(env.FRONTEND_URL),
-      'process.env.GATEWAY_ADDRESS': JSON.stringify(env.GATEWAY_ADDRESS),
-      'process.env.EXECUTION_CONTRACT_ADDRESS': JSON.stringify(env.EXECUTION_CONTRACT_ADDRESS)
+      'process.env.VITE_GATEWAY_URL': JSON.stringify(env.VITE_GATEWAY_URL),
+      'process.env.VITE_FRONTEND_URL': JSON.stringify(env.VITE_FRONTEND_URL),
+      'process.env.VITE_GATEWAY_ADDRESS': JSON.stringify(env.VITE_GATEWAY_ADDRESS),
+      'process.env.VITE_EXECUTION_CONTRACT_ADDRESS': JSON.stringify(env.VITE_EXECUTION_CONTRACT_ADDRESS)
     },
     resolve: {
       alias: {

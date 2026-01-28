@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { ethers } from 'ethers';
 
 const COORDINATOR_ABI = ["function depositCredits() external payable"];
-const COORDINATOR_ADDRESS = process.env.EXECUTION_CONTRACT_ADDRESS || "0x5DEbFCE5EaFc886f872fC3899ed3520133f5Bea4";
+const COORDINATOR_ADDRESS = process.env.VITE_EXECUTION_CONTRACT_ADDRESS || "0x5DEbFCE5EaFc886f872fC3899ed3520133f5Bea4";
 
 export default function ApiUsage() {
     const { address } = useWallet();

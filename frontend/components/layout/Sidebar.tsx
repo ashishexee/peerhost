@@ -15,7 +15,7 @@ export default function Sidebar() {
     if (!address) return;
     const fetchCredits = async () => {
       try {
-        await fetch(`${import.meta.env.VITE_GATEWAY_URL || 'http://localhost:3001'}/billing/sync`, {
+        await fetch(`${process.env.VITE_GATEWAY_URL || 'http://localhost:3001'}/billing/sync`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ wallet: address })

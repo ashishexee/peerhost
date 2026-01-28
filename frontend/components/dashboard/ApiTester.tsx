@@ -262,7 +262,7 @@ export default function ApiTester() {
                     {/* Free Endpoint */}
                     <div className="flex items-center gap-3 bg-black/20 p-2.5 rounded-lg border border-white/5 group hover:border-white/10 transition-colors">
                         <span className="text-[10px] font-bold text-green-400 px-2 py-0.5 bg-green-500/10 rounded uppercase tracking-wider border border-green-500/20">Free</span>
-                        <span className="flex-1 text-xs text-gray-300 font-mono truncate" title={`${process.env.GATEWAY_URL}/run/${process.env.GATEWAY_ADDRESS}/peerhostfree/hello`}>
+                        <span className="flex-1 text-xs text-gray-300 font-mono truncate" title={`${process.env.VITE_GATEWAY_URL}/run/${process.env.GATEWAY_ADDRESS}/peerhostfree/hello`}>
                             .../peerhostfree/hello
                         </span>
                         <button

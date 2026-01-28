@@ -93,7 +93,7 @@ export default function NewDeployment() {
     };
 
     const handleConnectGitHub = () => {
-        window.location.href = `${process.env.GATEWAY_URL}/auth/github/login`;
+        window.location.href = `${process.env.VITE_GATEWAY_URL}/auth/github/login`;
     };
 
     const handlePublicRepo = async () => {
@@ -213,7 +213,7 @@ export default function NewDeployment() {
         const toastId = toast.loading("Deploying to PeerHost Network...");
 
         try {
-            const res = await fetch(`${process.env.GATEWAY_URL}/deploy`, {
+            const res = await fetch(`${process.env.VITE_GATEWAY_URL}/deploy`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -236,7 +236,7 @@ export default function NewDeployment() {
                 toast.success("Deployment Successful!", { id: toastId });
 
                 // Base URL Display
-                const baseUrl = `${process.env.GATEWAY_URL}/run/${address}/${projectName}/`;
+                const baseUrl = `${process.env.VITE_GATEWAY_URL}/run/${address}/${projectName}/`;
 
                 toast.custom((t) => (
                     <div className="bg-[#111] border border-white/10 p-4 rounded-lg shadow-xl text-white min-w-[300px]">
@@ -442,7 +442,7 @@ export default function NewDeployment() {
                                 defaultValue={selectedRepo.name}
                                 className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-white/30"
                             />
-                            <p className="text-xs text-gray-500 mt-2">URL: <code>{process.env.GATEWAY_URL?.replace("https://", "")}/run/{address?.slice(0, 6)}.../{'{'}PROJECT_NAME{'}'}/fn</code></p>
+                            <p className="text-xs text-gray-500 mt-2">URL: <code>{process.env.VITE_GATEWAY_URL?.replace("https://", "")}/run/{address?.slice(0, 6)}.../{'{'}PROJECT_NAME{'}'}/fn</code></p>
                         </div>
                         <div>
                             <label className="block text-sm font-semibold text-gray-400 mb-2">Base Directory</label>

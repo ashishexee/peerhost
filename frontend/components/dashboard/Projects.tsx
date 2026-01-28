@@ -60,7 +60,7 @@ export default function Projects() {
     };
 
     const copyProjectUrl = (subdomain: string, project: string) => {
-        const url = `${process.env.GATEWAY_URL}/run/${subdomain}/${project}`;
+        const url = `${process.env.VITE_GATEWAY_URL}/run/${subdomain}/${project}`;
         navigator.clipboard.writeText(url);
         toast.success('Project URL copied to clipboard');
     };

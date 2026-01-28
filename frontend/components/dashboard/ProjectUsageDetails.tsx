@@ -8,7 +8,7 @@ import { ethers } from 'ethers';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 const COORDINATOR_ABI = ["function depositCredits() external payable"];
-const COORDINATOR_ADDRESS = process.env.EXECUTION_CONTRACT_ADDRESS || "0x5DEbFCE5EaFc886f872fC3899ed3520133f5Bea4"; // Deployed on Amoy
+const COORDINATOR_ADDRESS = process.env.VITE_EXECUTION_CONTRACT_ADDRESS || "0x5DEbFCE5EaFc886f872fC3899ed3520133f5Bea4"; // Deployed on Amoy
 
 export default function ProjectUsageDetails() {
     const { projectName } = useParams();

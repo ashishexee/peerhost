@@ -137,7 +137,7 @@ export default function Dashboard() {
 
                                         setLoading(true);
                                         try {
-                                            const res = await fetch(`${process.env.GATEWAY_URL}/deploy`, {
+                                            const res = await fetch(`${process.env.VITE_GATEWAY_URL}/deploy`, {
                                                 method: 'POST',
                                                 headers: { 'Content-Type': 'application/json' },
                                                 body: JSON.stringify({
