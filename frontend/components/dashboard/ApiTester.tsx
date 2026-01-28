@@ -266,7 +266,7 @@ export default function ApiTester() {
                             .../peerhostfree/hello
                         </span>
                         <button
-                            onClick={() => copyToClipboard(`${process.env.GATEWAY_URL}/run/${process.env.GATEWAY_ADDRESS}/peerhostfree/hello`, 'free')}
+                            onClick={() => copyToClipboard(`${process.env.VITE_GATEWAY_URL}/run/${'0xda684A91a506f3E303834C97784dEE2b31bBc6bc'}/peerhostfree/hello`, 'free')}
                             className="p-1.5 text-gray-500 hover:text-white hover:bg-white/10 rounded-md transition-all"
                             title="Copy & Use"
                         >
@@ -277,11 +277,11 @@ export default function ApiTester() {
                     {/* Paid Endpoint */}
                     <div className="flex items-center gap-3 bg-black/20 p-2.5 rounded-lg border border-white/5 group hover:border-white/10 transition-colors">
                         <span className="text-[10px] font-bold text-yellow-400 px-2 py-0.5 bg-yellow-500/10 rounded uppercase tracking-wider border border-yellow-500/20">Paid</span>
-                        <span className="flex-1 text-xs text-gray-300 font-mono truncate" title={`${process.env.GATEWAY_URL}/run/${process.env.GATEWAY_ADDRESS}/peerhostefjb/hello`}>
+                        <span className="flex-1 text-xs text-gray-300 font-mono truncate" title={`${process.env.VITE_GATEWAY_URL}/run/${'0xda684A91a506f3E303834C97784dEE2b31bBc6bc'}/peerhostefjb/hello`}>
                             .../peerhostefjb/hello
                         </span>
                         <button
-                            onClick={() => copyToClipboard(`${process.env.GATEWAY_URL}/run/${process.env.GATEWAY_ADDRESS}/peerhostefjb/hello`, 'paid')}
+                            onClick={() => copyToClipboard(`${process.env.VITE_GATEWAY_URL}/run/${'0xda684A91a506f3E303834C97784dEE2b31bBc6bc'}/peerhostefjb/hello`, 'paid')}
                             className="p-1.5 text-gray-500 hover:text-white hover:bg-white/10 rounded-md transition-all"
                             title="Copy & Use"
                         >
@@ -309,7 +309,7 @@ export default function ApiTester() {
                         type="text"
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
-                        placeholder={`${process.env.GATEWAY_URL}/...`}
+                        placeholder={`${process.env.VITE_GATEWAY_URL}/...`}
                         className="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white font-mono focus:outline-none focus:border-purple-500 transition-colors"
                     />
                     <button
