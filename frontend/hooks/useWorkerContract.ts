@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react';
 import { ethers, BrowserProvider, Contract } from 'ethers';
 import ExecutionCoordinatorABI from '../abi/ExecutionCoordinator.json';
 
-const CONTRACT_ADDRESS = process.env.EXECUTION_CONTRACT_ADDRESS || '';
+const CONTRACT_ADDRESS = process.env.VITE_EXECUTION_CONTRACT_ADDRESS || '';
 const MIN_STAKE_WEI = ethers.parseEther('2'); // 2 POL
 
 export interface WorkerStakeInfo {

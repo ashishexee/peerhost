@@ -15,11 +15,12 @@ import WorkerRegistration from './components/workers/WorkerRegistration';
 import ApiUsage from './components/dashboard/ApiUsage';
 import ProjectUsageDetails from './components/dashboard/ProjectUsageDetails';
 import LearnMore from './components/pages/LearnMore';
-import {Docs} from './components/pages/Docs';
+import { Docs } from './components/pages/Docs';
 import ExecutionFlow from './components/landing/ExecutionFlow';
 import { Earnings } from './components/dashboard/Earnings';
 import ApiTester from './components/dashboard/ApiTester';
 import FuturePlans from './components/landing/FuturePlans';
+import Changelog from './components/pages/Changelog';
 import { Toaster } from 'sonner';
 
 function App() {
@@ -57,6 +58,7 @@ function App() {
                 } />
 
                 <Route path="/learn-more" element={<LearnMore />} />
+                <Route path="/changelog" element={<Changelog />} />
 
                 <Route path="/docs" element={<Docs />} />
 

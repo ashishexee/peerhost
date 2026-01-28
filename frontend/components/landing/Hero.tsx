@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Triangle, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../../utils/WalletContext';
@@ -46,7 +46,7 @@ const Hero = () => {
           className="flex justify-center mb-8 fill-[#8247E5]"
         >
           <a
-            href="https://amoy.polygonscan.com/address/0x087a2d886fc8eadf5d03f6ea5acd0b1430c13fb8"
+            href="https://amoy.polygonscan.com/address/0x5DEbFCE5EaFc886f872fC3899ed3520133f5Bea4"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/5 hover:border-[#8247E5]/50 hover:bg-[#8247E5]/10 transition-all cursor-pointer backdrop-blur-sm group"
@@ -118,6 +118,13 @@ const Hero = () => {
             className="h-12 px-8 rounded-full bg-transparent border border-white/20 text-white font-medium text-base hover:bg-white/10 transition-all backdrop-blur-sm"
           >
             Future Plans
+          </button>
+
+          <button
+            onClick={() => navigate('/changelog')}
+            className="h-12 px-8 rounded-full bg-transparent border border-white/20 text-white font-medium text-base hover:bg-white/10 transition-all backdrop-blur-sm"
+          >
+            Changelog
           </button>
 
           <button

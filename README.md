@@ -1,8 +1,16 @@
-> [!NOTE]
-> An early MVP of the Worker application is included in `/peerhost_app` as a preview of upcoming work,
-> demonstrating continued progress and showcasing planned scope for PeerHost.
-
 # PeerHost — The Universal Decentralized & Monetizable Serverless Network
+
+## Latest Updates (Changelog)
+
+### Wave 5 (Current) - January 2026: Optimistic Consensus, Staking & Speed
+* **Result Speed Optimizations (7-11s Latency)**: Execution latency slashed from ~20s to ~7-11s via "Optimistic Response". The Gateway now returns the first valid result immediately while ensuring finality in the background.
+* **Optimistic Majority Voting & Rewards**: Hybrid consensus mechanism: Immediate user response followed by a 30-second voting window. If >66% consensus is reached, the result is signed. The fastest worker claims 0.03 POL, while 0.02 POL is distributed among honest voters as an incentive for verification.
+* **Payment System & Usage Controls**: Introduced a "Freemium" model: Each endpoint receives 20 free requests. Beyond this, usage requires Credits purchased with POL (50 Credits = 1 POL). Added "Pause/Resume" functionality for granular control over endpoint availability. Project creation is unlimited—scale freely and pay only for actual execution.
+* **Worker Staking & Rational Integrity**: Permissionless "Burner Node" architecture. Workers must stake >2 POL to participate. This bond is subject to immediate slashing implementation upon proven dishonesty. Honest workers can withdraw anytime, subject to a safety cooldown.
+* **Long-Term Network Security**: Self-healing grid driven by economic incentives. As the network grows, the cost of attack rises exponentially while the probability of success drops to near zero.
+* **Stealth Auditor System (Project Canary)**: A "Sword of Damocles" for the worker grid. The Gateway functions as an invisible auditor, injecting random, indistinguishable test cases into the request stream. Workers never know if a job is real or a test. If they return a malicious result for a canary job, their stake is immediately revoked (slashed). This constant, probabilistic threat ensures workers act honestly at all times to protect their capital.
+* **Blacklist & Redemption Protocol**: New "Unban" mechanism in smart contracts. Blacklisted workers can re-enter the network by paying a strict 1 POL penalty and undergoing a probation period, allowing for redemption while maintaining high standards.
+---
 
 **PeerHost** is a next-generation serverless platform that evolves the cloud in two revolutionary ways:
 
